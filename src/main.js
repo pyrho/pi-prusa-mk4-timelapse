@@ -1,8 +1,6 @@
-const { startSerialRead } = require('./serial')
-
+import { startSerialRead } from "./serial"
 function main() {
-startSerialRead()
-
+  startSerialRead()
 }
 
 main()

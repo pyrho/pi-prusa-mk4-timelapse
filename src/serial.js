@@ -1,7 +1,7 @@
-const { SerialPort } = require("serialport");
-const { ReadlineParser } = require("@serialport/parser-readline");
+import { SerialPort } from "serialport";
+import { ReadlineParser } from "@serialport/parser-readline";
 
-function startSerialRead() {
+export function startSerialRead() {
   // Configure the serial port
   const port = new SerialPort({
     path: "/dev/ttyACM0",
