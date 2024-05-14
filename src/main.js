@@ -1,4 +1,5 @@
-import { startSerialRead } from "./serial"
+const { startSerialRead } = require('./serial')
+
 function main() {
   startSerialRead()
 }
