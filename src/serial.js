@@ -1,7 +1,7 @@
 const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
-export function startSerialRead() {
+function startSerialRead() {
   // Configure the serial port
   const port = new SerialPort({
     path: "/dev/ttyACM0",
@@ -26,3 +26,5 @@ export function startSerialRead() {
     console.error("Error: ", err.message);
   });
 }
+
+module.exports = { startSerialRead }
