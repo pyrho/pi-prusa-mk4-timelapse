@@ -25,7 +25,7 @@ export const takePicture = (() => {
   // Get the camera at load time to speed up the first picture
   getCamera().then(() => debug("Camera initialized at load time"));
 
-  const takePicture = (retried = false) =>
+  const takePicture = (retried = false): Promise<Buffer> =>
     new Promise<Buffer>((resolve, reject) =>
       getCamera({ reset: retried }).then((camera) => {
         debug("Taking picture...");
