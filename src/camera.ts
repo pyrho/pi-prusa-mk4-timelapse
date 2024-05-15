@@ -1,5 +1,5 @@
 import gphoto2, { Camera } from "gphoto2";
-import { debug } from "./logger";
+import { debug, error } from "./logger";
 
 const GP2 = gphoto2.GPhoto2;
 
@@ -23,7 +23,9 @@ export const takePicture = (() => {
     });
 
   // Get the camera at load time to speed up the first picture
-  getCamera().then(() => debug("Camera initialized at load time"));
+  getCamera()
+    .then(() => debug("Camera initialized at load time"))
+    .catch((e) => error(e));
 
   const takePicture = (retried = false) =>
     new Promise<Buffer>((resolve, reject) => {
