@@ -34,7 +34,7 @@ export const takePicture = (() => {
             // In the "normal" case, this will happen
             // if the camera is disconnected
             // Retry once, retrying will also reset the camera instance
-            if (!retried) return takePicture(true);
+            // if (!retried) return takePicture(true);
             return reject(err);
           } else {
             return resolve(data);

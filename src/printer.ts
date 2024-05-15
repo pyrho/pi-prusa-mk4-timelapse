@@ -1,12 +1,11 @@
 import { SerialPort } from "serialport";
+const { execFileSync } = require('node:child_process');
 import { ReadlineParser } from "serialport";
 import { error, debug, log } from "./logger";
 import { match } from "ts-pattern";
 import { takePicture } from "./camera";
 import fs from "node:fs/promises";
-
-type Messages = "echo:print_start" | "echo:capture" | "echo:print_stop";
-
+import process from 'node:process'
 export const startPrinterSerialChannel = (): void => {
   const port = new SerialPort({
     path: "/dev/ttyACM0",
@@ -28,10 +27,8 @@ export const startPrinterSerialChannel = (): void => {
     match(data as unknown)
       .with("echo:capture", async () => {
         log("Capturing...");
-        await takePicture().then((d) =>
-          fs.writeFile(`/tmp/${+new Date()}.jpg`, d),
-        );
-        log("Captured!");
+        const x = execFileSync('pidof gphoto2')
+        process.kill(x, 'SIGUSR1')
       })
       .with("echo:print_stop", () => {})
       .with("echo:print_start", () => {})
