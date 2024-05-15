@@ -25,9 +25,9 @@ export const startPrinterSerialChannel = (): void => {
     debug("Received:", data);
 
     match(data as unknown)
-      .with("echo:capture", async () => {
+      .with("action:capture", async () => {
         log("Capturing...");
-        const x = execFileSync('pidof gphoto2')
+        const x = execFileSync('pidof',[ 'gphoto2'])
         process.kill(x, 'SIGUSR1')
       })
       .with("echo:print_stop", () => {})
