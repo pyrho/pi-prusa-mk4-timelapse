@@ -3,6 +3,7 @@ import { ReadlineParser } from "serialport";
 import { error, debug, log } from "./logger";
 import { match } from "ts-pattern";
 import { takePicture } from "./camera";
+import fs from "node:fs/promises";
 
 type Messages = "action:print_start" | "action:capture" | "action:print_stop";
 
@@ -28,7 +29,7 @@ export const startPrinterSerialChannel = (): void => {
       .with("action:capture", async () => {
         log("Capturing...");
         await takePicture().then((d) =>
-          Bun.write(`/tmp/${+new Date()}.jpg`, d),
+          fs.writeFile(`/tmp/${+new Date()}.jpg`, d),
         );
         log("Captured!");
       })

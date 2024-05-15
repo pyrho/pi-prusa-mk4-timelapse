@@ -1,6 +1,7 @@
 // gphoto2.d.ts
 
 declare module 'gphoto2' {
+   
   export class GPhoto2 {
     constructor (options?: GPhotoOptions)
 
