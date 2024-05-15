@@ -5,7 +5,7 @@ import { match } from "ts-pattern";
 import { takePicture } from "./camera";
 import fs from "node:fs/promises";
 
-type Messages = "action:print_start" | "action:capture" | "action:print_stop";
+type Messages = "echo:print_start" | "echo:capture" | "echo:print_stop";
 
 export const startPrinterSerialChannel = (): void => {
   const port = new SerialPort({
@@ -26,15 +26,15 @@ export const startPrinterSerialChannel = (): void => {
     debug("Received:", data);
 
     match(data as unknown)
-      .with("action:capture", async () => {
+      .with("echo:capture", async () => {
         log("Capturing...");
         await takePicture().then((d) =>
           fs.writeFile(`/tmp/${+new Date()}.jpg`, d),
         );
         log("Captured!");
       })
-      .with("action:print_stop", () => {})
-      .with("action:print_start", () => {})
+      .with("echo:print_stop", () => {})
+      .with("echo:print_start", () => {})
       .otherwise(() => error(`Unknown message: ${data}`));
   });
 

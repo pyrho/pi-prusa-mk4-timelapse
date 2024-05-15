@@ -11,5 +11,5 @@ export function debug(...args: any[]): void {
 }
 
 export function error(...args: any[]): void {
-  console.error(...args);
+  console.log(`[${new Date().toISOString()}]`, ...args);
 }
