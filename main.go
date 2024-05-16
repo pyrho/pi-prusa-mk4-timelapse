@@ -2,7 +2,6 @@ package main
 
 import (
     "strings"
-    "github.com/dc0d/onexit"
     "os"
 	"fmt"
 	"log"
@@ -16,10 +15,6 @@ func initCam() *gphoto2.Camera {
 		panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
 
-    onexit.Register(func() { 
-    camera.Exit()
-    camera.Free()
-}, 100)
     return camera
 }
 
