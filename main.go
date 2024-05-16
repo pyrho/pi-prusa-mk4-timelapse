@@ -1,10 +1,30 @@
 package main
 
 import (
+    "os"
 	"fmt"
 	"log"
 	"go.bug.st/serial"
+    "github.com/jonmol/gphoto2"
 )
+
+func camTest() {
+	camera, err := gphoto2.NewCamera("")
+	if err != nil {
+		panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
+	}
+    snapFile := "/tmp/testshot.jpeg"
+	if f, err := os.Create(snapFile); err != nil {
+		fmt.Println("Failed to create temp file", snapFile, "giving up!", err)
+	} else {
+		fmt.Println("Taking shot, then copy to", snapFile)
+		if err := camera.CaptureDownload(f, false); err != nil {
+			fmt.Println("Failed to capture!", err)
+		}
+	}
+	camera.Exit()
+	camera.Free()
+}
 
 func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- error) {
 	buf := make([]byte, 100)
