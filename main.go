@@ -3,20 +3,22 @@ package main
 import (
     "strings"
     "os"
+    "os/signal"
 	"fmt"
 	"log"
 	"go.bug.st/serial"
     "github.com/jonmol/gphoto2"
 )
 
+
 func initCam() *gphoto2.Camera {
-	camera, err := gphoto2.NewCamera("")
+	c, err := gphoto2.NewCamera("")
 	if err != nil {
 		panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
-
-    return camera
+    return c
 }
+
 
 func snap(camera *gphoto2.Camera) {
     snapFile := "/tmp/testshot.jpeg"
@@ -44,8 +46,21 @@ func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- err
 	}
 }
 
+var camera *gphoto2.Camera
+
 func main() {
-    camera := initCam()
+    camera = initCam()
+    interruptChannel := make(chan os.Signal, 1)
+    signal.Notify(interruptChannel, os.Interrupt)
+
+    go func(){
+        for _sig := range interruptChannel {
+		fmt.Println("Failed to create temp file", _sig)
+            camera.Exit()
+            camera.Free()
+        }
+    }()
+
 	// Open the serial port
 	mode := &serial.Mode{
 		BaudRate: 9600,
@@ -64,6 +79,8 @@ func main() {
 
 	// Start a goroutine to read from the serial port
 	go readFromSerial(port, dataChan, errChan)
+
+    // Handle the interrupt signal for a graceful shutdown of the application
 
 	// Main loop to handle incoming data
 	for {
