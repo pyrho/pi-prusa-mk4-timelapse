@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+    "time"
 	"log"
 	"os"
 	"os/signal"
@@ -20,7 +21,9 @@ func initCam() *gphoto2.Camera {
 }
 
 func snap(camera *gphoto2.Camera) {
-	snapFile := "/tmp/testshot.jpeg"
+    fmt.Println()
+    //snapFile := "/tmp/testshot.jpeg"
+    snapFile := fmt.Sprintf("/tmp/capt%d.jpg", time.Now().Unix())
 	if f, err := os.Create(snapFile); err != nil {
 		fmt.Println("Failed to create temp file", snapFile, "giving up!", err)
 	} else {
@@ -86,7 +89,7 @@ func main() {
 		select {
 		case data := <-dataChan:
 			fmt.Printf("Received: %s\n", data)
-			if strings.Contains(data, "G1") {
+            if strings.Contains(data, "action:capture") {
 				go snap(camera)
 			}
 		case err := <-errChan:
