@@ -22,6 +22,7 @@ type config struct {
 
 func spawnFFMPEG(capturedPhotosPath string) {
 	// ffmpeg CMD: `ffmpeg -f image2 -framerate 24 -pattern_type glob -i "*.jpg" -crf 20 -c:v libx264 -pix_fmt yuv420p -s 1920x1280 output.mp4`
+    fmt.Println("Starting FFMPEG timelapse creation at", capturedPhotosPath, "...")
 	cmd := exec.Command(
 		"ffmpeg",
 		"-f", "image2", "-framerate", "24",
@@ -37,6 +38,7 @@ func spawnFFMPEG(capturedPhotosPath string) {
 	if err != nil {
 		log.Fatalf("Cannot create timelapse: %v", err)
 	}
+    fmt.Println("Timelapse created!")
 }
 
 func loadConfig() config {
