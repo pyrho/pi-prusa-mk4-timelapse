@@ -8,11 +8,15 @@ import (
     "github.com/jonmol/gphoto2"
 )
 
-func camTest() {
+func initCam() *gphoto2.Camera {
 	camera, err := gphoto2.NewCamera("")
 	if err != nil {
 		panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
+    return camera
+}
+
+func snap(camera *gphoto2.Camera) {
     snapFile := "/tmp/testshot.jpeg"
 	if f, err := os.Create(snapFile); err != nil {
 		fmt.Println("Failed to create temp file", snapFile, "giving up!", err)
@@ -22,8 +26,6 @@ func camTest() {
 			fmt.Println("Failed to capture!", err)
 		}
 	}
-	camera.Exit()
-	camera.Free()
 }
 
 func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- error) {
@@ -41,6 +43,7 @@ func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- err
 }
 
 func main() {
+    camera := initCam()
 	// Open the serial port
 	mode := &serial.Mode{
 		BaudRate: 9600,
@@ -65,6 +68,7 @@ func main() {
 		select {
 		case data := <-dataChan:
 			fmt.Printf("Received: %s\n", data)
+            snap(camera)
 		case err := <-errChan:
 			log.Printf("Error: %v", err)
 			return
