@@ -149,11 +149,6 @@ func main() {
 	// Start a goroutine to read from the serial port
 	go readFromSerial(port, dataChan, errChan)
 
-	// TMP
-	go spawnFFMPEG("/tmp/captures")
-
-	// Handle the interrupt signal for a graceful shutdown of the application
-
 	// Main loop to handle incoming data
 	for {
 		select {
