@@ -1,6 +1,7 @@
 package main
 
 import (
+    "strings"
     "os"
 	"fmt"
 	"log"
@@ -68,7 +69,9 @@ func main() {
 		select {
 		case data := <-dataChan:
 			fmt.Printf("Received: %s\n", data)
-            go snap(camera)
+            if strings.Contains(data, "G1") {
+                go snap(camera)
+            }
 		case err := <-errChan:
 			log.Printf("Error: %v", err)
 			return
