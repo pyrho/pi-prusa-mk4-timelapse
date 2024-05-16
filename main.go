@@ -35,7 +35,7 @@ func snap(camera *gphoto2.Camera) {
 }
 
 func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- error) {
-	buf := make([]byte, 100)
+	buf := make([]byte, 200)
 	for {
 		n, err := port.Read(buf)
 		if err != nil {
