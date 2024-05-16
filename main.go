@@ -58,6 +58,7 @@ func main() {
 		fmt.Println("Failed to create temp file", _sig)
             camera.Exit()
             camera.Free()
+            os.Exit(0)
         }
     }()
 
