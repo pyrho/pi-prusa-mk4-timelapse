@@ -2,7 +2,7 @@ package main
 
 import (
     "strings"
-    "onexit"
+    "github.com/dc0d/onexit"
     "os"
 	"fmt"
 	"log"
