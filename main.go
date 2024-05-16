@@ -68,7 +68,7 @@ func main() {
 		select {
 		case data := <-dataChan:
 			fmt.Printf("Received: %s\n", data)
-            snap(camera)
+            go snap(camera)
 		case err := <-errChan:
 			log.Printf("Error: %v", err)
 			return
