@@ -84,7 +84,7 @@ func createNewPhotoDirectory(basePath string) string {
 
 func snap(camera *gphoto2.Camera, path string) {
 	if len(path) == 0 {
-		log.Fatal("There is no folder created for this print, should not happen")
+		log.Fatal("There is no folder created for this print")
 	}
 
 	snapFile := fmt.Sprintf("%s/capt%d.jpg", path, time.Now().Unix())
@@ -153,21 +153,29 @@ func main() {
 	for {
 		select {
 		case data := <-dataChan:
-            log.Printf("Received: %s\n", data)
+			log.Printf("Received: %s\n", data)
 
 			if strings.Contains(data, "status:print_start") {
-                log.Println("New print started, creating folder.")
+				log.Println("New print started, creating folder.")
 				capturePath = createNewPhotoDirectory(config.OutputDir)
 			}
 
 			if strings.Contains(data, "action:capture") {
 				log.Println("Capturing.")
-				go snap(camera, capturePath)
+				if len(capturePath) == 0 {
+					go snap(camera, fmt.Sprintf("%s/orphans", config.OutputDir))
+				} else {
+					go snap(camera, capturePath)
+				}
 			}
 
 			if strings.Contains(data, "status:print_stop") {
 				log.Println("Print done, creating timelapse")
-				go spawnFFMPEG(capturePath)
+				if len(capturePath) == 0 {
+					go spawnFFMPEG(fmt.Sprintf("%s/orphans", config.OutputDir))
+				} else {
+					go spawnFFMPEG(capturePath)
+				}
 			}
 		case err := <-errChan:
 			log.Printf("Error: %v", err)
