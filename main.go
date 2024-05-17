@@ -191,8 +191,13 @@ func main() {
 
 			case COMMAND_PRINT_START:
 				log.Println("New print started")
+
+				if camera != nil {
+					camera.Exit()
+					camera.Free()
+					camera = nil
+				}
 				camera = initCam()
-				log.Println("Initialized Camera")
 				capturePath = createNewPhotoDirectory(config.OutputDir)
 				log.Println("New photo directory created")
 
