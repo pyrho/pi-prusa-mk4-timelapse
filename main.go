@@ -111,8 +111,6 @@ func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- err
 	}
 }
 
-var camera *gphoto2.Camera
-
 func capturePathOrDefault(config config, capturePath string) string {
 	if len(capturePath) == 0 {
 		return fmt.Sprintf("%s/orphans", config.OutputDir)
@@ -150,7 +148,7 @@ func parseGcode(incomingMessage string) Command {
 
 func main() {
 	var capturePath string
-	camera = initCam()
+	var camera *gphoto2.Camera = nil
 	config := loadConfig()
 	interruptChannel := make(chan os.Signal, 1)
 	signal.Notify(interruptChannel, os.Interrupt)
@@ -158,8 +156,10 @@ func main() {
 	go func() {
 		<-interruptChannel
 		fmt.Println("Interrupt trapped, freeing Camera")
-		camera.Exit()
-		camera.Free()
+		if camera != nil {
+			camera.Exit()
+			camera.Free()
+		}
 		os.Exit(0)
 	}()
 
@@ -188,18 +188,28 @@ func main() {
 	for {
 		select {
 		case data := <-dataChan:
-			log.Printf("Received: %s\n", data)
+			// log.Printf("Received: %s\n", data)
 			switch command := parseGcode(data); command {
-			case COMMAND_CAPTURE:
-				log.Println("Capturing.")
-				go snap(camera, capturePathOrDefault(config, capturePath))
 
 			case COMMAND_PRINT_START:
-				log.Println("New print started, creating folder.")
+				log.Println("New print started")
+				camera = initCam()
+				log.Println("Initialized Camera")
 				capturePath = createNewPhotoDirectory(config.OutputDir)
+				log.Println("New photo directory created")
+
+			case COMMAND_CAPTURE:
+				log.Println("Capturing...")
+				go snap(camera, capturePathOrDefault(config, capturePath))
 
 			case COMMAND_PRINT_STOP:
-				log.Println("Print done, creating timelapse")
+				log.Println("Print stopped, release camera")
+				if camera != nil {
+					camera.Exit()
+					camera.Free()
+                    camera = nil
+				}
+				log.Println("Print done, creating timelapse...")
 				go spawnFFMPEG(capturePathOrDefault(config, capturePath))
 			}
 
