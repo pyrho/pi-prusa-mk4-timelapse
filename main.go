@@ -130,18 +130,13 @@ const (
 )
 
 func parseGcode(incomingMessage string) Command {
-	if !strings.Contains(incomingMessage, "// ") {
-		return COMMAND_UNHANDLED
-	}
-
-	switch v := strings.Replace(incomingMessage, "// ", "", 1); v {
-	case "action:capture":
+	if strings.HasPrefix(incomingMessage, "// action:capture") {
 		return COMMAND_CAPTURE
-	case "status:print_start":
+	} else if strings.HasPrefix(incomingMessage, "// status:print_start") {
 		return COMMAND_PRINT_START
-	case "status:print_stop":
+	} else if strings.HasPrefix(incomingMessage, "// status:print_stop") {
 		return COMMAND_PRINT_STOP
-	default:
+	} else {
 		return COMMAND_UNHANDLED
 	}
 }
@@ -149,8 +144,8 @@ func parseGcode(incomingMessage string) Command {
 func main() {
 	var capturePath string
 	var camera *gphoto2.Camera = nil
-    // Init on start, so that it works on restart midprint
-    camera = initCam()
+	// Init on start, so that it works on restart midprint
+	camera = initCam()
 	config := loadConfig()
 	interruptChannel := make(chan os.Signal, 1)
 	signal.Notify(interruptChannel, os.Interrupt)
