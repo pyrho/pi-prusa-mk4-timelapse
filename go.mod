@@ -1,4 +1,4 @@
-module github.com/pi-prusa-mk4-timelapse
+module github.com/pyrho/timelapse-serial
 
 go 1.21.6
 

@@ -22,7 +22,7 @@ type config struct {
 
 func spawnFFMPEG(capturedPhotosPath string) {
 	// ffmpeg CMD: `ffmpeg -f image2 -framerate 24 -pattern_type glob -i "*.jpg" -crf 20 -c:v libx264 -pix_fmt yuv420p -s 1920x1280 output.mp4`
-	fmt.Println("Starting FFMPEG timelapse creation at", capturedPhotosPath, "...")
+	log.Println("Starting FFMPEG timelapse creation at", capturedPhotosPath, "...")
 	cmd := exec.Command(
 		"ffmpeg",
 		"-f", "image2", "-framerate", "24",
@@ -39,7 +39,7 @@ func spawnFFMPEG(capturedPhotosPath string) {
 	if err != nil {
 		log.Fatalf("Cannot create timelapse: %v", err)
 	}
-	fmt.Println("Timelapse created!")
+	log.Println("Timelapse created!")
 }
 
 func loadConfig() config {
@@ -89,10 +89,10 @@ func snap(camera *gphoto2.Camera, path string) {
 
 	snapFile := fmt.Sprintf("%s/capt%d.jpg", path, time.Now().Unix())
 	if f, err := os.Create(snapFile); err != nil {
-		fmt.Println("Failed to create temp file", snapFile, "giving up!", err)
+		log.Println("Failed to create temp file", snapFile, "giving up!", err)
 	} else {
 		if err := camera.CaptureDownload(f, false); err != nil {
-			fmt.Println("Failed to capture!", err)
+			log.Println("Failed to capture!", err)
 		}
 	}
 }
@@ -140,7 +140,7 @@ func main() {
 
 	defer port.Close()
 
-	fmt.Println("Serial port opened successfully")
+	log.Println("Serial port opened successfully")
 
 	// Create channels to handle data and errors
 	dataChan := make(chan string)
@@ -153,19 +153,20 @@ func main() {
 	for {
 		select {
 		case data := <-dataChan:
-			// fmt.Printf("Received: %s\n", data)
+            log.Printf("Received: %s\n", data)
+
 			if strings.Contains(data, "status:print_start") {
-				fmt.Println("New print started, creating folder.")
+                log.Println("New print started, creating folder.")
 				capturePath = createNewPhotoDirectory(config.OutputDir)
 			}
 
 			if strings.Contains(data, "action:capture") {
-				fmt.Println("Capturing.")
+				log.Println("Capturing.")
 				go snap(camera, capturePath)
 			}
 
 			if strings.Contains(data, "status:print_stop") {
-				fmt.Println("Print done, creating timelapse")
+				log.Println("Print done, creating timelapse")
 				go spawnFFMPEG(capturePath)
 			}
 		case err := <-errChan:
