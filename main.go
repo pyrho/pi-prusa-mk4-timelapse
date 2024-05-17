@@ -112,6 +112,12 @@ func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- err
 }
 
 var camera *gphoto2.Camera
+type Command string
+
+func parseGcode(incomingMessage string) Command {
+    strings.Split(incomingMessage, ",")
+    return "action"
+}
 
 func main() {
 	var capturePath string
