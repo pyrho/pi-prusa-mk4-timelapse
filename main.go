@@ -76,7 +76,7 @@ func createNewPhotoDirectory(basePath string) string {
 	// time.Now().Format("2006-01-02-15-04-05")
 	if _, err := os.Stat(newDirPath); os.IsNotExist(err) {
 		if err = os.MkdirAll(newDirPath, os.ModePerm); err != nil {
-			log.Fatal("Cannot create directory %s: %v", newDirPath, err)
+			log.Fatal("Cannot create directory", newDirPath)
 		}
 	}
 	return newDirPath
@@ -112,11 +112,40 @@ func readFromSerial(port serial.Port, dataChan chan<- string, errChan chan<- err
 }
 
 var camera *gphoto2.Camera
-type Command string
+
+func capturePathOrDefault(config config, capturePath string) string {
+	if len(capturePath) == 0 {
+		return fmt.Sprintf("%s/orphans", config.OutputDir)
+	} else {
+		return capturePath
+	}
+
+}
+
+type Command int
+
+const (
+	COMMAND_CAPTURE = iota
+	COMMAND_PRINT_START
+	COMMAND_PRINT_STOP
+	COMMAND_UNHANDLED
+)
 
 func parseGcode(incomingMessage string) Command {
-    strings.Split(incomingMessage, ",")
-    return "action"
+	if !strings.Contains(incomingMessage, "// ") {
+		return COMMAND_UNHANDLED
+	}
+
+	switch v := strings.Replace(incomingMessage, "// ", "", 1); v {
+	case "action:capture":
+		return COMMAND_CAPTURE
+	case "status:print_start":
+		return COMMAND_PRINT_START
+	case "status:print_stop":
+		return COMMAND_PRINT_STOP
+	default:
+		return COMMAND_UNHANDLED
+	}
 }
 
 func main() {
@@ -160,29 +189,20 @@ func main() {
 		select {
 		case data := <-dataChan:
 			log.Printf("Received: %s\n", data)
+			switch command := parseGcode(data); command {
+			case COMMAND_CAPTURE:
+				log.Println("Capturing.")
+				go snap(camera, capturePathOrDefault(config, capturePath))
 
-			if strings.Contains(data, "status:print_start") {
+			case COMMAND_PRINT_START:
 				log.Println("New print started, creating folder.")
 				capturePath = createNewPhotoDirectory(config.OutputDir)
-			}
 
-			if strings.Contains(data, "action:capture") {
-				log.Println("Capturing.")
-				if len(capturePath) == 0 {
-					go snap(camera, fmt.Sprintf("%s/orphans", config.OutputDir))
-				} else {
-					go snap(camera, capturePath)
-				}
-			}
-
-			if strings.Contains(data, "status:print_stop") {
+			case COMMAND_PRINT_STOP:
 				log.Println("Print done, creating timelapse")
-				if len(capturePath) == 0 {
-					go spawnFFMPEG(fmt.Sprintf("%s/orphans", config.OutputDir))
-				} else {
-					go spawnFFMPEG(capturePath)
-				}
+				go spawnFFMPEG(capturePathOrDefault(config, capturePath))
 			}
+
 		case err := <-errChan:
 			log.Printf("Error: %v", err)
 			return
