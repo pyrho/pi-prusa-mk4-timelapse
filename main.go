@@ -149,6 +149,8 @@ func parseGcode(incomingMessage string) Command {
 func main() {
 	var capturePath string
 	var camera *gphoto2.Camera = nil
+    // Init on start, so that it works on restart midprint
+    camera = initCam()
 	config := loadConfig()
 	interruptChannel := make(chan os.Signal, 1)
 	signal.Notify(interruptChannel, os.Interrupt)
@@ -188,7 +190,8 @@ func main() {
 	for {
 		select {
 		case data := <-dataChan:
-			// log.Printf("Received: %s\n", data)
+			log.Printf("Received: %s", data)
+			log.Printf("CMD: %d", parseGcode(data))
 			switch command := parseGcode(data); command {
 
 			case COMMAND_PRINT_START:
@@ -207,7 +210,7 @@ func main() {
 				if camera != nil {
 					camera.Exit()
 					camera.Free()
-                    camera = nil
+					camera = nil
 				}
 				log.Println("Print done, creating timelapse...")
 				go spawnFFMPEG(capturePathOrDefault(config, capturePath))
