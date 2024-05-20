@@ -41,6 +41,8 @@ func StartSerialRead(baudRate int, portName string, onRead OnRead) {
 	dataChan := make(chan string)
 	errChan := make(chan error)
 
+
+    log.Println("Ready...")
 	// Start a goroutine to read from the serial port
 	go readFromSerial(port, dataChan, errChan)
 

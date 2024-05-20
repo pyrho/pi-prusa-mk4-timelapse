@@ -20,10 +20,19 @@ type CameraWrapperInterface interface {
 	Stop()
 	Snap()
 	CreateNewSnapshotsDir()
+	GetCurrentSnapshotsDir() string
 }
 
 func MakeCameraWrapper(baseOutputDir string) CameraWrapper {
 	return CameraWrapper{baseOutputDir: baseOutputDir}
+}
+
+func (c *CameraWrapper) GetCurrentSnapshotsDir() string {
+	if len(c.currentSnapshotDirFullPath) == 0 {
+		return c.baseOutputDir + "/orphans"
+	} else {
+		return c.currentSnapshotDirFullPath
+	}
 }
 
 func (c *CameraWrapper) CreateNewSnapshotsDir() {
@@ -53,6 +62,11 @@ func (c *CameraWrapper) Stop() {
 }
 
 func (c *CameraWrapper) Snap() {
+	if c.instance == nil {
+		log.Println("There is no camera instance, not taking a pic")
+		return
+	}
+
 	var currentSnapshotDir string
 	// This means that the program was spawned when a print
 	// was already in progress.
@@ -60,6 +74,8 @@ func (c *CameraWrapper) Snap() {
 	// orphans folder
 	if len(c.currentSnapshotDirFullPath) == 0 {
 		currentSnapshotDir = c.baseOutputDir + "/orphans"
+	} else {
+		currentSnapshotDir = c.currentSnapshotDirFullPath
 	}
 
 	snapFilename := fmt.Sprintf("%s/snap%d.jpg", currentSnapshotDir, time.Now().Unix())
@@ -79,8 +95,8 @@ func initCam() *gphoto2.Camera {
 	// Calling `NewCamera` with `""` will connect to the first available camera
 	c, err := gphoto2.NewCamera("")
 	if err != nil {
-        log.Println("No cameras detected")
-        return nil
+		log.Println("No cameras detected")
+		return nil
 		// panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
 	return c

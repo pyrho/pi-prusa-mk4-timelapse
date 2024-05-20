@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 
 	"github.com/pyrho/timelapse-serial/internal/camera"
 	"github.com/pyrho/timelapse-serial/internal/interrupt_trap"
@@ -29,6 +28,4 @@ func main() {
 		*portName,
 		serial.CreateSerialMessageHandler(&c),
 	)
-
-    log.Println("Ready...")
 }

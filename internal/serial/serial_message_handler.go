@@ -34,7 +34,7 @@ func CreateSerialMessageHandler(cam camera.CameraWrapperInterface) func(m string
 			// log.Println("Print stopped, release camera")
 			// cam.Stop()
 			log.Println("Print done, creating timelapse...")
-			go ffmpeg.SpawnFFMPEG("/tmp")
+			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir())
 			// go spawnFFMPEG(capturePathOrDefault(config, capturePath))
 		}
 
