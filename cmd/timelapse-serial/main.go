@@ -9,20 +9,20 @@ import (
 )
 
 func main() {
+	cameraSerial := flag.String("cameraSerial", "", "The serial number of the camera")
 	portName := flag.String("portName", "/dev/ttyACM0", "The path of the printer port")
 	baudRate := flag.Int("baudRate", 115200, "The baud rate of the serial port")
 	outputDir := flag.String("outputDir", "/tmp/timelapse-serial-captures", "The output path where the pictures and timelapses will be stored")
 	flag.Parse()
 
-    camera.Monit()
+	c := camera.MakeCameraWrapper(*outputDir)
+	camera.MonitorCameraUsbEvents(cameraSerial, &c)
 
-	camera := camera.MakeCameraWrapper(*outputDir)
-
-	interrupttrap.TrapInterrupt(func() { camera.Stop() })
+	interrupttrap.TrapInterrupt(func() { c.Stop() })
 
 	serial.StartSerialRead(
 		*baudRate,
 		*portName,
-		serial.CreateSerialMessageHandler(&camera),
+		serial.CreateSerialMessageHandler(&c),
 	)
 }
