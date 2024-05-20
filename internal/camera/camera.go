@@ -36,6 +36,7 @@ func (c *CameraWrapper) Start() {
 }
 
 func (c *CameraWrapper) Stop() {
+    log.Println("Stopping cameraWrapper")
 	if c.instance != nil {
 		c.instance.Exit()
 		c.instance.Free()
