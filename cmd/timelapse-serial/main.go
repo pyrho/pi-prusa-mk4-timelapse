@@ -14,6 +14,8 @@ func main() {
 	outputDir := flag.String("outputDir", "/tmp/timelapse-serial-captures", "The output path where the pictures and timelapses will be stored")
 	flag.Parse()
 
+    camera.Monit()
+
 	camera := camera.MakeCameraWrapper(*outputDir)
 
 	interrupttrap.TrapInterrupt(func() { camera.Stop() })
