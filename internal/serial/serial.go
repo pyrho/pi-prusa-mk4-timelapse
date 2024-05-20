@@ -50,7 +50,7 @@ func StartSerialRead(baudRate int, portName string, onRead OnRead) {
 	for {
 		select {
 		case data := <-dataChan:
-			log.Printf("Received: %s", data)
+			// log.Printf("Received: %s", data)
 			onRead(data)
 
 		case err := <-errChan:
