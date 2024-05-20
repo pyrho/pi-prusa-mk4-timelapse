@@ -22,7 +22,7 @@ func CreateSerialMessageHandler(cam camera.CameraWrapperInterface) func(m string
 
 		case COMMAND_PRINT_START:
 			log.Println("New print started")
-
+			cam.Start()
 			cam.CreateNewSnapshotsDir()
 			log.Println("New photo directory created")
 
@@ -31,8 +31,8 @@ func CreateSerialMessageHandler(cam camera.CameraWrapperInterface) func(m string
 			cam.Snap()
 
 		case COMMAND_PRINT_STOP:
-			// log.Println("Print stopped, release camera")
-			// cam.Stop()
+			log.Println("Print stopped")
+			cam.Stop()
 			log.Println("Print done, creating timelapse...")
 			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir())
 			// go spawnFFMPEG(capturePathOrDefault(config, capturePath))
