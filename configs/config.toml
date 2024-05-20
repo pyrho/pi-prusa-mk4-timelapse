@@ -1,3 +1,0 @@
-BaudRate = 115200
-SerialPort = "/dev/ttyACM0"
-OutputDir = "/tmp/timelapse-serial-captures"
