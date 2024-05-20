@@ -1,5 +1,7 @@
 build:
-	go build -o bin/main main.go
+	go build -o bin/timelapse-serial cmd/timelapse-serial/main.go
 
-run:
-	go run main.go
+run: build
+	./bin/timelapse-serial
+
+.PHONY: run build
