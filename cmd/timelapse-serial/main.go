@@ -20,7 +20,7 @@ func main() {
     // Start the camera at program start. Otherwise, if the camera is 
     // already plugged in at startup we won't have it opened.
     c.Start()
-	camera.MonitorCameraUsbEvents(cameraSerial, &c)
+	go camera.MonitorCameraUsbEvents(cameraSerial, &c)
 
 	interrupttrap.TrapInterrupt(func() { c.Stop() })
 
