@@ -9,11 +9,13 @@ import (
 
 func MonitorCameraUsbEvents(cameraSerialNumber *string, cameraWrapper *CameraWrapper) {
 
-	actionFilter := &usbmon.ActionFilter{Action: usbmon.ActionAll}
+	actionFilter := &usbmon.ActionFilter{Action: usbmon.ActionAdd}
+	serialFilter := &usbmon.SerialFilter{Serial: *cameraSerialNumber}
 
 	devs, err := usbmon.ListenFiltered(
 		context.Background(),
 		actionFilter,
+		serialFilter,
 	)
 
 	if err != nil {
@@ -21,19 +23,21 @@ func MonitorCameraUsbEvents(cameraSerialNumber *string, cameraWrapper *CameraWra
 	}
 
 	for dev := range devs {
-		if dev.Serial() == *cameraSerialNumber {
-			switch dev.Action() {
-			case "add":
-				log.Println("Camera connected")
-				cameraWrapper.Start()
-			case "remove":
-				log.Println("Camera disconnected")
-				cameraWrapper.Stop()
-			}
+		switch dev.Action() {
+		case "add":
+			log.Println("Camera connected")
+			cameraWrapper.Start()
 		}
-		// fmt.Printf("-- Device %s\n", dev.Action())
-		// fmt.Println("Serial: " + dev.Serial())
-		// fmt.Println("Path: " + dev.Path())
-		// fmt.Println("Vendor: " + dev.Vendor())
 	}
 }
+
+/*
+Design Log
+
+## 2024-05-20
+When filtering on "serial", we only get the "add" event, because the "remove"
+event does not have a vendor/serial attached to it (only path).
+It's fine though, we really only care about when the camera connects, at which
+point we need to refresh the gPhoto handle, and restarting the cameraWrapper
+instance will clear the previous instance.
+*/
