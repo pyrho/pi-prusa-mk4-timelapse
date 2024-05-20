@@ -198,6 +198,7 @@ func main() {
 					camera = nil
 				}
 				camera = initCam()
+				log.Println("Camera re-initialized")
 				capturePath = createNewPhotoDirectory(config.OutputDir)
 				log.Println("New photo directory created")
 
