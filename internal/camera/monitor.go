@@ -2,6 +2,7 @@ package camera
 
 import (
 	"context"
+	"log"
 
 	"github.com/rubiojr/go-usbmon"
 )
@@ -24,8 +25,10 @@ func MonitorCameraUsbEvents(cameraSerialNumber *string, cameraWrapper *CameraWra
 	for dev := range devs {
 		switch dev.Action() {
 		case "add":
+            log.Println("Camera connected")
 			cameraWrapper.Start()
 		case "remove":
+            log.Println("Camera disconnected")
 			cameraWrapper.Stop()
 		}
 		// fmt.Printf("-- Device %s\n", dev.Action())

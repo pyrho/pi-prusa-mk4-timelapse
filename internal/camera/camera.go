@@ -29,18 +29,23 @@ func MakeCameraWrapper(baseOutputDir string) CameraWrapper {
 func (c *CameraWrapper) CreateNewSnapshotsDir() {
 	c.currentSnapshotDirFullPath =
 		utils.CreateNewPhotoDirectory(c.baseOutputDir)
+	log.Println("Created new Snapshot directory: " + c.currentSnapshotDirFullPath)
 }
 
 func (c *CameraWrapper) Start() {
 	c.instance = initCam()
+	log.Println("Started CameraWrapper")
 }
 
 func (c *CameraWrapper) Stop() {
-    log.Println("Stopping cameraWrapper")
 	if c.instance != nil {
 		c.instance.Exit()
 		c.instance.Free()
 		c.instance = nil
+		log.Println("Stopped cameraWrapper")
+	} else {
+		log.Println("Camera was already stopped")
+
 	}
 }
 
