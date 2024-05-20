@@ -33,6 +33,9 @@ func (c *CameraWrapper) CreateNewSnapshotsDir() {
 }
 
 func (c *CameraWrapper) Start() {
+	if c.instance != nil {
+		c.Stop()
+	}
 	c.instance = initCam()
 	log.Println("Started CameraWrapper")
 }
@@ -76,7 +79,9 @@ func initCam() *gphoto2.Camera {
 	// Calling `NewCamera` with `""` will connect to the first available camera
 	c, err := gphoto2.NewCamera("")
 	if err != nil {
-		panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
+        log.Println("No cameras detected")
+        return nil
+		// panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
 	return c
 }

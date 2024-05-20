@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/pyrho/timelapse-serial/internal/camera"
 	"github.com/pyrho/timelapse-serial/internal/interrupt_trap"
@@ -16,6 +17,9 @@ func main() {
 	flag.Parse()
 
 	c := camera.MakeCameraWrapper(*outputDir)
+    // Start the camera at program start. Otherwise, if the camera is 
+    // already plugged in at startup we won't have it opened.
+    c.Start()
 	camera.MonitorCameraUsbEvents(cameraSerial, &c)
 
 	interrupttrap.TrapInterrupt(func() { c.Stop() })
@@ -25,4 +29,6 @@ func main() {
 		*portName,
 		serial.CreateSerialMessageHandler(&c),
 	)
+
+    log.Println("Ready...")
 }
