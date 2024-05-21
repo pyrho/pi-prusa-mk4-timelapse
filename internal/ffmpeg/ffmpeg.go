@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func SpawnFFMPEG(capturedPhotosPath string) {
+func SpawnFFMPEG(capturedPhotosPath string, outputResolution *string) {
 	// ch := make(chan int)
 	ctx, cancel := context.WithTimeoutCause(context.Background(), 3*time.Minute, errors.New("Timed out while creating timelapse"))
 	defer cancel()
@@ -24,7 +24,7 @@ func SpawnFFMPEG(capturedPhotosPath string) {
 		"-crf", "20",
 		"-c:v", "libx264",
 		"-pix_fmt", "yuv420p",
-		"-s", "1920x1280",
+		"-s", *outputResolution, // "1920x1280",
 		"-y",
 		fmt.Sprintf("%s/output.mp4", capturedPhotosPath),
 	)

@@ -15,7 +15,7 @@ const (
 	COMMAND_UNHANDLED
 )
 
-func CreateSerialMessageHandler(cam camera.CameraWrapperInterface) func(m string) {
+func CreateSerialMessageHandler(cam camera.CameraWrapperInterface, outputResolution *string) func(m string) {
 	return func(message string) {
 
 		switch command := parseCommand(message); command {
@@ -34,8 +34,7 @@ func CreateSerialMessageHandler(cam camera.CameraWrapperInterface) func(m string
 			log.Println("Print stopped")
 			cam.Stop()
 			log.Println("Print done, creating timelapse...")
-			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir())
-			// go spawnFFMPEG(capturePathOrDefault(config, capturePath))
+			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir(), outputResolution)
 		}
 
 	}
