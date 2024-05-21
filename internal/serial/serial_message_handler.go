@@ -15,27 +15,26 @@ const (
 	COMMAND_UNHANDLED
 )
 
-func CreateSerialMessageHandler(cam camera.CameraWrapperInterface) func(m string) {
+func CreateSerialMessageHandler(cam camera.CameraWrapperInterface, outputResolution *string) func(m string) {
 	return func(message string) {
 
 		switch command := parseCommand(message); command {
 
 		case COMMAND_PRINT_START:
 			log.Println("New print started")
-
 			cam.Start()
+			cam.CreateNewSnapshotsDir()
 			log.Println("New photo directory created")
 
 		case COMMAND_CAPTURE:
 			log.Println("Capturing...")
-			// go snap(camera, capturePathOrDefault(config, capturePath))
+			cam.Snap()
 
 		case COMMAND_PRINT_STOP:
-			log.Println("Print stopped, release camera")
+			log.Println("Print stopped")
 			cam.Stop()
 			log.Println("Print done, creating timelapse...")
-			go ffmpeg.SpawnFFMPEG("/tmp")
-			// go spawnFFMPEG(capturePathOrDefault(config, capturePath))
+			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir(), outputResolution)
 		}
 
 	}

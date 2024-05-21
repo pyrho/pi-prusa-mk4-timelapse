@@ -12,3 +12,7 @@
 - `action:capture`
 - `status:print_start`
 - `status:print_stop`
+
+## Find camera serial number
+`$> lsusb -v`
+look for your camera and the `iSerial` property

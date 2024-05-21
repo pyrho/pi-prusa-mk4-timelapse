@@ -1,15 +1,22 @@
 package ffmpeg
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
+	"time"
 )
 
-func SpawnFFMPEG(capturedPhotosPath string) {
+func SpawnFFMPEG(capturedPhotosPath string, outputResolution *string) {
+	// ch := make(chan int)
+	ctx, cancel := context.WithTimeoutCause(context.Background(), 3*time.Minute, errors.New("Timed out while creating timelapse"))
+	defer cancel()
+
 	// ffmpeg CMD: `ffmpeg -f image2 -framerate 24 -pattern_type glob -i "*.jpg" -crf 20 -c:v libx264 -pix_fmt yuv420p -s 1920x1280 output.mp4`
 	log.Println("Starting FFMPEG timelapse creation at", capturedPhotosPath, "...")
-	cmd := exec.Command(
+	cmd := exec.CommandContext(ctx,
 		"ffmpeg",
 		"-f", "image2", "-framerate", "24",
 		"-pattern_type", "glob",
@@ -17,13 +24,15 @@ func SpawnFFMPEG(capturedPhotosPath string) {
 		"-crf", "20",
 		"-c:v", "libx264",
 		"-pix_fmt", "yuv420p",
-		"-s", "1920x1280",
+		"-s", *outputResolution, // "1920x1280",
 		"-y",
 		fmt.Sprintf("%s/output.mp4", capturedPhotosPath),
 	)
-	err := cmd.Run()
-	if err != nil {
-		log.Fatalf("Cannot create timelapse: %v", err)
+	if err := cmd.Run(); err != nil {
+		log.Println("Error: " + err.Error())
+		// ch <- -1
+	} else {
+		log.Println("Timelapse created!")
+		// ch <- 0
 	}
-	log.Println("Timelapse created!")
 }
