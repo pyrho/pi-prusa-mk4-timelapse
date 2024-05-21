@@ -22,6 +22,7 @@ func MonitorCameraUsbEvents(cameraSerialNumber *string, cameraWrapper *CameraWra
 		panic(err)
 	}
 
+    log.Println("Monitoring camera with ID" + *cameraSerialNumber + "...")
 	for dev := range devs {
 		switch dev.Action() {
 		case "add":
