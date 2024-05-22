@@ -1,0 +1,14 @@
+[Printer]
+PortName = "/dev/ttyACM0"
+BaudRate = 115200
+
+[Camera]
+CameraSerialNumber = "000007601060"
+OutputDir = "/tmp/timelapse-serial-captures"
+
+# All of this is optional, if omitted these default value will be used
+[FFMPEG]
+OutputVideoResolution = "3246x2158"
+Codec = "libx264"
+PixelFormat = "yuv420p"
+FramesPerSecond = "24"
