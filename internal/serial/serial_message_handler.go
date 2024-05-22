@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pyrho/timelapse-serial/internal/camera"
+	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/ffmpeg"
 )
 
@@ -15,7 +16,7 @@ const (
 	COMMAND_UNHANDLED
 )
 
-func CreateSerialMessageHandler(cam camera.CameraWrapperInterface, outputResolution *string) func(m string) {
+func CreateSerialMessageHandler(cam camera.CameraWrapperInterface, ffmpegConfig *config.FFMPEG) func(m string) {
 	return func(message string) {
 
 		switch command := parseCommand(message); command {
@@ -34,7 +35,7 @@ func CreateSerialMessageHandler(cam camera.CameraWrapperInterface, outputResolut
 			log.Println("Print stopped")
 			cam.Stop()
 			log.Println("Print done, creating timelapse...")
-			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir(), outputResolution)
+			go ffmpeg.SpawnFFMPEG(cam.GetCurrentSnapshotsDir(), ffmpegConfig.WithDefaults())
 		}
 
 	}

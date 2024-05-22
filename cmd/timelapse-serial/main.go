@@ -5,22 +5,20 @@ import (
 	"log"
 
 	"github.com/pyrho/timelapse-serial/internal/camera"
+	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/interrupt_trap"
 	"github.com/pyrho/timelapse-serial/internal/serial"
 )
 
 func main() {
-	cameraSerialNumber := flag.String("cameraSerialNumber", "", "The serial number of the camera to monitor for connection events")
-	portName := flag.String("portName", "/dev/ttyACM0", "The path of the printer port")
-	baudRate := flag.Int("baudRate", 115200, "The baud rate of the serial port")
-	outputDir := flag.String("outputDir", "/tmp/timelapse-serial-captures", "The output path where the pictures and timelapses will be stored")
-    videoRes := flag.String("videoResolution", "3246x2158", "The output resolution of the timelapse video")
+	configPath := flag.String("configPath", "~/.config/timelapse-serial.toml", "The path of the config file")
 	flag.Parse()
+	config := config.LoadConfig(*configPath)
 
-	c := camera.MakeCameraWrapper(*outputDir)
+	c := camera.MakeCameraWrapper(config.Capture.OutputDir)
 
-	if len(*cameraSerialNumber) > 0 {
-		go camera.MonitorCameraUsbEvents(cameraSerialNumber, &c)
+	if len(config.Camera.CameraSerialNumber) > 0 {
+		go camera.MonitorCameraUsbEvents(&config.Camera.CameraSerialNumber, &c)
 	} else {
 		log.Println("Not monitoring camera plug events")
 	}
@@ -29,8 +27,8 @@ func main() {
 
 	// This needs to be last
 	serial.StartSerialRead(
-		*baudRate,
-		*portName,
-		serial.CreateSerialMessageHandler(&c, videoRes),
+		config.Printer.BaudRate,
+		config.Printer.PortName,
+		serial.CreateSerialMessageHandler(&c, &config.FFMPEG),
 	)
 }
