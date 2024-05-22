@@ -13,6 +13,7 @@ type Printer struct {
 
 type Camera struct {
 	CameraSerialNumber string
+	OutputDir          string
 }
 
 type FFMPEG struct {
@@ -43,16 +44,9 @@ func (f *FFMPEG) WithDefaults() FFMPEG {
 	return conf
 }
 
-type Capture struct {
-	OutputDir string
-	Codec     string
-	Fps       string
-}
-
 type Config struct {
 	Printer Printer
 	Camera  Camera
-	Capture Capture
 	FFMPEG  FFMPEG
 }
 

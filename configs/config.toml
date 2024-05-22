@@ -1,5 +1,7 @@
 [Printer]
-PortName = "/dev/ttyACM0"
+#PortName = "/dev/ttyACM0"
+#PortName = "/dev/pts/42"
+PortName = "/dev/pts/1"
 BaudRate = 115200
 
 [Camera]

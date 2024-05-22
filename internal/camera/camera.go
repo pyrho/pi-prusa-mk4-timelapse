@@ -91,6 +91,28 @@ func (c *CameraWrapper) Snap() {
 	}
 }
 
+// This function will take a snapshot and save it to a temporary
+// file which will be discarded.
+// It has been observed that the after the first picture has been taken
+// subsequent pictures are taken faster.
+// This function is meant to be called just after having initialized the 
+// camera .
+func warmupCamera(camInstance *gphoto2.Camera) {
+	f, err := os.CreateTemp("", "timelapse-serial")
+	if err != nil {
+		log.Println("No cameras detected")
+		panic(err)
+	}
+	defer os.Remove(f.Name())
+
+	if err := camInstance.CaptureDownload(f, false); err != nil {
+		log.Println("Failed to spool up camera!", err)
+	}
+
+}
+
+// Initializes the gphoto2 instance to the first avaialable camera
+// Will return nil if no cameras are found.
 func initCam() *gphoto2.Camera {
 	// Calling `NewCamera` with `""` will connect to the first available camera
 	c, err := gphoto2.NewCamera("")
@@ -99,5 +121,6 @@ func initCam() *gphoto2.Camera {
 		return nil
 		// panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
+    warmupCamera(c)
 	return c
 }

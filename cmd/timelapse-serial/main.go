@@ -15,7 +15,7 @@ func main() {
 	flag.Parse()
 	config := config.LoadConfig(*configPath)
 
-	c := camera.MakeCameraWrapper(config.Capture.OutputDir)
+	c := camera.MakeCameraWrapper(config.Camera.OutputDir)
 
 	if len(config.Camera.CameraSerialNumber) > 0 {
 		go camera.MonitorCameraUsbEvents(&config.Camera.CameraSerialNumber, &c)
@@ -26,9 +26,13 @@ func main() {
 	interrupttrap.TrapInterrupt(func() { c.Stop() })
 
 	// This needs to be last
-	serial.StartSerialRead(
-		config.Printer.BaudRate,
-		config.Printer.PortName,
+	go serial.StartSerialLoop(
+		&config,
 		serial.CreateSerialMessageHandler(&c, &config.FFMPEG),
 	)
+
+	log.Println("Running...")
+
+    // This will make the program run forever (unless interrupted/killed)
+	select {}
 }
