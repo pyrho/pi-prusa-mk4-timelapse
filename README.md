@@ -17,7 +17,7 @@
 
 ### Prerequisites
 ```shell
-sudo apt install libudev-dev tmux
+sudo apt install libudev-dev tmux libvips-dev libgphoto2
 ```
 
 ```shell

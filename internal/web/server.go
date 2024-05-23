@@ -51,13 +51,13 @@ func StartWebServer(conf *config.Config) {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(web.StyleCSS)))
 
 	http.HandleFunc("/get-thumb/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
-		thumb := ResizeMe(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
+		thumb := NewResize(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
 		w.Header().Set("Content-Type", "image/jpeg")
 		w.Write(thumb)
 	})
 
 	http.HandleFunc("/get-file/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
-		thumb := ResizeMe(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
+		thumb := NewResize(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
 		imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
 		io.WriteString(w, fmt.Sprintf("<img class='img-fluid' id='img-display' src='data:image/jpeg;base64,%s'/>", imgBase64Str))
 	})
@@ -75,7 +75,7 @@ func StartWebServer(conf *config.Config) {
 			go func() {
 				defer wg.Done()
 				imgPath := filepath.Join(conf.Camera.OutputDir, snap.FolderName, snap.FileName)
-				thumb := ResizeMe(imgPath)
+				thumb := NewResize(imgPath)
 				imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
 				mu.Lock()
 				allThumbs = append(allThumbs, Hi{
@@ -129,7 +129,7 @@ func StartWebServer(conf *config.Config) {
 			go func() {
 				defer wg.Done()
 				imgPath := filepath.Join(conf.Camera.OutputDir, snap.FolderName, snap.FileName)
-				thumb := ResizeMe(imgPath)
+				thumb := NewResize(imgPath)
 				imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
 				mu.Lock()
 				allThumbs = append(allThumbs, Hi{
