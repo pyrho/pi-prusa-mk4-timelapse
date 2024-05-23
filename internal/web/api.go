@@ -20,7 +20,7 @@ type SnapInfo struct {
 }
 
 func getSnapsForTimelapse(outputDir string, folderName string) []SnapInfo {
-	validSnap := regexp.MustCompile(`^capt[0-9]+.jpg$`)
+	validSnap := regexp.MustCompile(`^snap[0-9]+.jpg$`)
 	var tl []SnapInfo
 	files, err := os.ReadDir(filepath.Join(outputDir, folderName))
 	if err != nil {
@@ -57,7 +57,7 @@ func getTimelapseFolders3(outputDir string) []TLInfo {
 }
 func getTimelapseFolders2(outputDir string) Timelapses {
 	validDir := regexp.MustCompile(`^[0-9-]+$`)
-	validSnap := regexp.MustCompile(`^capt[0-9]+.jpg$`)
+	validSnap := regexp.MustCompile(`^snap[0-9]+.jpg$`)
 	var tl Timelapses
 	// var tl2 map[string][]string
 	tl3 := make(map[string][]string)
@@ -94,23 +94,3 @@ func getTimelapseFolders2(outputDir string) Timelapses {
 	}
 	return tl
 }
-
-// func getTimelapseFolders(outputDir string) Timelapses {
-// 	validDir := regexp.MustCompile(`^[0-9-]+$`)
-// 	validSnap := regexp.MustCompile(`^capt[0-9]+.jpg$`)
-// 	var tl Timelapses
-// 	// var tl2 map[string][]string
-// 	tl3 := make(map[string][]string)
-// 	filepath.WalkDir(outputDir, func(path string, d fs.DirEntry, e error) error {
-// 		if d.IsDir() && validDir.MatchString(d.Name()) {
-// 			tl3["ahi"] = []string{}
-// 			tl = append(tl, Timelapse{
-// 				FolderName: d.Name(),
-// 				Snaps:      []string{},
-// 			})
-// 		}
-// 		log.Println(path)
-// 		return e
-// 	})
-// 	return tl
-// }

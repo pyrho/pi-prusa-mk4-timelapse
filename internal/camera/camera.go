@@ -95,7 +95,7 @@ func (c *CameraWrapper) Snap() {
 // file which will be discarded.
 // It has been observed that the after the first picture has been taken
 // subsequent pictures are taken faster.
-// This function is meant to be called just after having initialized the 
+// This function is meant to be called just after having initialized the
 // camera .
 func warmupCamera(camInstance *gphoto2.Camera) {
 	f, err := os.CreateTemp("", "timelapse-serial")
@@ -108,6 +108,7 @@ func warmupCamera(camInstance *gphoto2.Camera) {
 	if err := camInstance.CaptureDownload(f, false); err != nil {
 		log.Println("Failed to spool up camera!", err)
 	}
+	log.Println("Camera warmed up!")
 
 }
 
@@ -121,6 +122,6 @@ func initCam() *gphoto2.Camera {
 		return nil
 		// panic(fmt.Sprintf("%s: %s", "Failed to connect to camera, make sure it's around!", err))
 	}
-    warmupCamera(c)
+	warmupCamera(c)
 	return c
 }

@@ -28,7 +28,7 @@ func SpawnFFMPEG(capturedPhotosPath string, ffmpegConfig config.FFMPEG) {
 		"-f", "image2",
 		"-framerate", "24",
 		"-pattern_type", "glob",
-		"-i", fmt.Sprintf("%s/capt*.jpg", capturedPhotosPath),
+		"-i", fmt.Sprintf("%s/snap*.jpg", capturedPhotosPath),
 		"-crf", "20",
 		"-c:v", "libx264",
 		"-pix_fmt", "yuv420p",
