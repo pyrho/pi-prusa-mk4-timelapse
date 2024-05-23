@@ -21,6 +21,7 @@ type FFMPEG struct {
 	FramesPerSecond       string
 	Codec                 string
 	PixelFormat           string
+    TimeoutInMinutes      int
 }
 
 func (f *FFMPEG) WithDefaults() FFMPEG {

@@ -1,0 +1,15 @@
+{{ define "folders" }}
+<div class="list-group">
+  {{ range .Timelapses }}
+  <button
+    type="button"
+    value="abc"
+    hx-get="/clicked/{{.FolderName}}"
+    hx-target="#current_tl"
+    class="list-group-item list-group-item-action"
+  >
+    {{ .FolderName }}
+  </button>
+  {{ end }}
+</div>
+{{ end }}

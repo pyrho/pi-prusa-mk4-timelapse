@@ -1,0 +1,35 @@
+{{ define "snaps" }}
+{{ if .HasTimelapse }}
+<video controls style="width: 500px">
+  <source src="/serve/{{.FolderName}}/output.mp4" type="video/mp4" />
+</video>
+{{ else }}
+<span> No timelapse video yet. </snap>
+{{ end }}
+<div class="image-grid">
+  {{range $index, $value := .AllThumbs}}
+  <a hx-get="/modal/{{ $value.ImgPath }}" 
+    hx-target="#modals-here" 
+    hx-trigger="click" 
+    data-bs-toggle="modal" 
+    data-bs-target="#modals-here"
+      >
+      <img
+    class="img-fluid"
+    src="data:image/jpeg;base64,{{ $value.B64 }}"
+  />
+  </a>
+  {{ end }}
+  <!-- Add more images as needed -->
+</div>
+<div id="modals-here"
+    class="modal modal-blur fade"
+    style="display: none"
+    aria-hidden="false"
+    tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+{{ end }}

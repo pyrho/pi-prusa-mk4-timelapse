@@ -1,7 +1,6 @@
 [Printer]
 #PortName = "/dev/ttyACM0"
-#PortName = "/dev/pts/42"
-PortName = "/dev/pts/1"
+PortName = "/dev/pts/42"
 BaudRate = 115200
 
 [Camera]
@@ -14,3 +13,4 @@ OutputVideoResolution = "3246x2158"
 Codec = "libx264"
 PixelFormat = "yuv420p"
 FramesPerSecond = "24"
+TimeoutInMinutes = 20
