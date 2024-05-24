@@ -24,7 +24,7 @@ func CreateAndSaveThumbnail(imgPath string) string {
 	}
     defer image.Close()
 
-	if err := image.Resize(0.5, vips.KernelLinear); err != nil {
+	if err := image.Resize(0.06, vips.KernelLinear); err != nil {
 		panic(err)
 	}
 	buf, _, err := image.ExportJpeg(&vips.JpegExportParams{

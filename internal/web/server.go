@@ -1,6 +1,7 @@
 package web
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"html/template"
@@ -19,7 +20,7 @@ import (
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
-func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int) []Hi {
+func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
 	log.Println("Creating all thumbnails")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
@@ -28,22 +29,28 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 	// var wg sync.WaitGroup
 	for ix, snap := range snaps {
 		go func(sn SnapInfo, index int) {
-			log.Println("Creating thumbnail...")
-			imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
-			thumbPath := CreateAndSaveThumbnail(imgPath)
-			thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
-			if err != nil {
-				log.Println(err)
-				thumbRelativePath = ""
+			select {
+			case <-ctx.Done():
+				fmt.Println("Goroutine closed by context cancel status")
+				t.Done(nil)
+			default:
+				log.Println("Creating thumbnail...")
+				imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
+				thumbPath := CreateAndSaveThumbnail(imgPath)
+				thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
+				if err != nil {
+					log.Println(err)
+					thumbRelativePath = ""
+				}
+				mu.Lock()
+				allThumbs = append(allThumbs, Hi{
+					ThumbnailPath: thumbRelativePath,
+					ix:            index,
+					ImgPath:       sn.FolderName + "/" + sn.FileName,
+				})
+				mu.Unlock()
+				t.Done(err)
 			}
-			mu.Lock()
-			allThumbs = append(allThumbs, Hi{
-				ThumbnailPath: thumbRelativePath,
-				ix:            index,
-				ImgPath:       sn.FolderName + "/" + sn.FileName,
-			})
-			mu.Unlock()
-			t.Done(err)
 		}(snap, ix)
 
 		errorCount := t.Throttle()
@@ -77,7 +84,7 @@ func StartWebServer(conf *config.Config) {
 		}
 		template := template.Must(template.ParseFS(Templates, "templates/snaps.html"))
 		if err := template.ExecuteTemplate(w, "snaps", map[string]interface{}{
-			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines),
+			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, r.Context()),
 			"FolderName":   folderName,
 			"HasTimelapse": hasTimelapseVideo,
 		}); err != nil {
@@ -95,13 +102,14 @@ func StartWebServer(conf *config.Config) {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		ctrx := r.Context()
 
 		timelapseFolders := getTimelapseFolders(conf.Camera.OutputDir)
 		var firstTimelapseFolderName string
 		var allThumbs []Hi
 		if len(timelapseFolders) > 0 {
 			firstTimelapseFolderName = timelapseFolders[0].FolderName
-			allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines)
+			allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctrx)
 		}
 		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, firstTimelapseFolderName)
 		hasTimelapseVideo := true
