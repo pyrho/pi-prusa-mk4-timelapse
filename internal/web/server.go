@@ -103,14 +103,12 @@ func StartWebServer(conf *config.Config) {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		ctrx := r.Context()
-
 		timelapseFolders := getTimelapseFolders(conf.Camera.OutputDir)
 		var firstTimelapseFolderName string
-		var allThumbs []Hi
+		// var allThumbs []Hi
 		if len(timelapseFolders) > 0 {
 			firstTimelapseFolderName = timelapseFolders[0].FolderName
-			allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctrx)
+			// allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctrx)
 		}
 		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, firstTimelapseFolderName)
 		hasTimelapseVideo := true
@@ -119,7 +117,7 @@ func StartWebServer(conf *config.Config) {
 		}
 		templateData := map[string]interface{}{
 			"Timelapses":   timelapseFolders,
-			"AllThumbs":    allThumbs,
+			// "AllThumbs":    ,
 			"HasTimelapse": hasTimelapseVideo,
 			"FolderName":   firstTimelapseFolderName,
 			"LiveFeedURL":  conf.Camera.LiveFeedURL,
