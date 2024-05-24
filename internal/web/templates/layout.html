@@ -13,10 +13,10 @@
     <title>Timelapse Serial</title>
     <link rel="stylesheet" href="/assets/style.css" />
   </head>
-  <body class="p-5">
+  <body class="mt-5">
     <div class="container">
       {{ if .LiveFeedURL }}
-      <div class="row p-5">
+      <div class="row mt-5">
         <div class="col">
           <img
             class="img-fluid object-fit-cover border rounded"
@@ -25,12 +25,12 @@
         </div>
       </div>
       {{ end }}
-      <div class="row p-5">
+      <div class="row mt-5">
         <h1>Timelapse Folders</h1>
-        <div class="col-4">{{ template "folders" . }}</div>
+        <div class="col-6 col-sm-3">{{ template "folders" . }}</div>
       </div>
 
-      <div class="row p-5">
+      <div class="row mt-5">
         <h1>Snapshots</h1>
         <div class="d-flex justify-content-center">
           <span class="loader spinner-border" role="status"></span>
