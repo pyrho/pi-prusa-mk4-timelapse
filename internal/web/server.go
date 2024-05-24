@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"github.com/pyrho/timelapse-serial/internal/config"
-	webAssets "github.com/pyrho/timelapse-serial/internal/web/assets"
+	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
 type TimelapseSnap struct {
@@ -47,8 +47,13 @@ type TmplData struct {
 }
 
 func StartWebServer(conf *config.Config) {
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		// http.ServeFile(w, r, "relative/path/to/favicon.ico")
+		http.ServeFileFS(w, r, assets.FavIcon, "favicon.ico")
+
+	})
 	http.Handle("/serve/", http.StripPrefix("/serve/", http.FileServer(http.Dir(conf.Camera.OutputDir))))
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(webAssets.StyleCSS)))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(assets.StyleCSS)))
 
 	http.HandleFunc("/get-thumb/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
 		thumb := CreateAndSaveThumbnail(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
@@ -158,7 +163,7 @@ func StartWebServer(conf *config.Config) {
 			"AllThumbs":    allThumbs,
 			"HasTimelapse": hasTimelapseVideo,
 			"FolderName":   tl[0].FolderName,
-			"LiveFeedURL": conf.Camera.LiveFeedURL,
+			"LiveFeedURL":  conf.Camera.LiveFeedURL,
 		}
 
 		template := template.Must(template.ParseFS(Templates, "templates/layout.html", "templates/folders.html", "templates/snaps.html"))
