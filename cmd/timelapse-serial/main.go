@@ -25,9 +25,7 @@ func main() {
 		log.Println("Not monitoring camera plug events")
 	}
 
-	vips.Startup(&vips.Config{
-        MaxCacheMem: 5 * 1024 * 1024,
-    })
+	vips.Startup(nil)
 	vips.LoggingSettings(nil, vips.LogLevelCritical)
 	interrupttrap.TrapInterrupt(func() {
 		c.Stop()

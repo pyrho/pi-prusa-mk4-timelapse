@@ -14,19 +14,21 @@ import (
 	"log"
 	"net/http"
 
+    "github.com/nozzle/throttler"
 	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
 func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
+    log.Println("Creating all thumbnails.")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
 	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
-	var wg sync.WaitGroup
+    t := throttler.New(2, len(snaps))
+	// var wg sync.WaitGroup
 	for ix, snap := range snaps {
-		wg.Add(1)
 		go func(sn SnapInfo, index int) {
-			defer wg.Done()
+            log.Println("Creating thumbnail...")
 			imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
 			thumbPath := CreateAndSaveThumbnail(imgPath)
 			thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
@@ -34,6 +36,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
 				log.Println(err)
 				thumbRelativePath = ""
 			}
+			t.Done(err)
 			mu.Lock()
 			allThumbs = append(allThumbs, Hi{
 				ThumbnailPath: thumbRelativePath,
@@ -43,8 +46,12 @@ func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
 			mu.Unlock()
 		}(snap, ix)
 
+        errorCount := t.Throttle()
+        if errorCount > 0 {
+            log.Println("image/resize: errorCount > 0")
+        }
 	}
-	wg.Wait()
+	// wg.Wait()
 	slices.SortFunc(allThumbs, func(a, b Hi) int {
 		return b.ix - a.ix
 	})
