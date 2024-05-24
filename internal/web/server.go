@@ -45,7 +45,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
 	}
 	wg.Wait()
 	slices.SortFunc(allThumbs, func(a, b Hi) int {
-		return a.ix - b.ix
+		return b.ix - a.ix
 	})
 	return allThumbs
 
