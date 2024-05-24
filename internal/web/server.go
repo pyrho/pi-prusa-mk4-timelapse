@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"sync"
+	"time"
 
 	"log"
 	"net/http"
@@ -48,7 +49,6 @@ func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
 		return b.ix - a.ix
 	})
 	return allThumbs
-
 }
 
 func StartWebServer(conf *config.Config) {
@@ -138,7 +138,6 @@ func getSnapsForTimelapseFolder(outputDir string, folderName string) []SnapInfo 
 func getTimelapseFolders(outputDir string) []TLInfo {
 	validDir := regexp.MustCompile(`^[0-9-]+$`)
 	var tl []TLInfo
-	// var tl2 map[string][]string
 	files, err := os.ReadDir(outputDir)
 	if err != nil {
 		log.Fatalf("2: Cannot read output dir: %s", err)
@@ -151,5 +150,29 @@ func getTimelapseFolders(outputDir string) []TLInfo {
 			})
 		}
 	}
+	slices.SortFunc(tl, func(a, b TLInfo) int {
+		aTime, _ := folderNameToTime(a.FolderName)
+		bTime, _ := folderNameToTime(b.FolderName)
+
+		if bTime.Before(aTime) {
+			return -1
+		} else if bTime.After(aTime){
+			return 1
+		} else {
+            return 0
+        }
+	})
 	return tl
+}
+
+func folderNameToTime(folderName string) (time.Time, error) {
+    layout := "2006-01-02-15-04-05"
+	date, err := time.Parse(layout, folderName)
+	if err != nil {
+        log.Println(err)
+		return time.Now(), err
+	} else {
+		return date, nil
+
+	}
 }
