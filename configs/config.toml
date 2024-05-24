@@ -17,3 +17,6 @@ Codec = "libx264"
 PixelFormat = "yuv420p"
 FramesPerSecond = "24"
 TimeoutInMinutes = 20
+
+[Web]
+ThumbnailCreationMaxGoroutines = 10

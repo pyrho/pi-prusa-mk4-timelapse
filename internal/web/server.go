@@ -19,12 +19,12 @@ import (
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
-func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
+func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int) []Hi {
     log.Println("Creating all thumbnails.")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
 	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
-    t := throttler.New(2, len(snaps))
+    t := throttler.New(maxRoutines, len(snaps))
 	// var wg sync.WaitGroup
 	for ix, snap := range snaps {
 		go func(sn SnapInfo, index int) {
@@ -76,7 +76,7 @@ func StartWebServer(conf *config.Config) {
 		}
 		template := template.Must(template.ParseFS(Templates, "templates/snaps.html"))
 		if err := template.ExecuteTemplate(w, "snaps", map[string]interface{}{
-			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir),
+			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines),
 			"FolderName":   folderName,
 			"HasTimelapse": hasTimelapseVideo,
 		}); err != nil {
@@ -100,7 +100,7 @@ func StartWebServer(conf *config.Config) {
 		var allThumbs []Hi
 		if len(timelapseFolders) > 0 {
 			firstTimelapseFolderName = timelapseFolders[0].FolderName
-			allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir)
+			allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines)
 		}
 		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, firstTimelapseFolderName)
 		hasTimelapseVideo := true

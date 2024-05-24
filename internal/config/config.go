@@ -14,7 +14,11 @@ type Printer struct {
 type Camera struct {
 	CameraSerialNumber string
 	OutputDir          string
-    LiveFeedURL       string
+	LiveFeedURL        string
+}
+
+type Web struct {
+	ThumbnailCreationMaxGoroutines int
 }
 
 type FFMPEG struct {
@@ -22,7 +26,7 @@ type FFMPEG struct {
 	FramesPerSecond       string
 	Codec                 string
 	PixelFormat           string
-    TimeoutInMinutes      int
+	TimeoutInMinutes      int
 }
 
 func (f *FFMPEG) WithDefaults() FFMPEG {
@@ -50,6 +54,7 @@ type Config struct {
 	Printer Printer
 	Camera  Camera
 	FFMPEG  FFMPEG
+	Web     Web
 }
 
 func LoadConfig(configPath string) Config {

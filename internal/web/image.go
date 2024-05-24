@@ -22,6 +22,7 @@ func CreateAndSaveThumbnail(imgPath string) string {
 	if err != nil {
 		panic(err)
 	}
+    defer image.Close()
 
 	if err := image.Resize(0.5, vips.KernelLinear); err != nil {
 		panic(err)
