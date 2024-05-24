@@ -3,22 +3,16 @@ package web
 import (
 	"bytes"
 	"fmt"
+	"github.com/daddye/vips"
 	"image"
-	"image/color"
-	"image/draw"
 	"image/jpeg"
 	"io"
 	"log"
-	"math"
 	"os"
 	"regexp"
-
-	// "strings"
-	"github.com/daddye/vips"
 )
 
 func NewResize(imgPath string) []byte {
-	// thumbPath := fmt.Sprintf("%s_thumb.jpg", imagePath)
 	m1 := regexp.MustCompile(`snap([0-9]+.jpg)`)
 	thumbPath := m1.ReplaceAllString(imgPath, "thumb${1}")
 	thumb, err := os.Open(thumbPath)
