@@ -7,6 +7,9 @@ BaudRate = 115200
 CameraSerialNumber = "000007601060"
 OutputDir = "/tmp/timelapse-serial-captures"
 
+# Optional
+LiveFeedURL = "http://prusaberry.lan:8000/stream.mjpg"
+
 # All of this is optional, if omitted these default value will be used
 [FFMPEG]
 OutputVideoResolution = "3246x2158"

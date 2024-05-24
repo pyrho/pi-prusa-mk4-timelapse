@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"github.com/pyrho/timelapse-serial/internal/config"
-	web "github.com/pyrho/timelapse-serial/internal/web/assets"
+	webAssets "github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
 type TimelapseSnap struct {
@@ -48,16 +48,16 @@ type TmplData struct {
 
 func StartWebServer(conf *config.Config) {
 	http.Handle("/serve/", http.StripPrefix("/serve/", http.FileServer(http.Dir(conf.Camera.OutputDir))))
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(web.StyleCSS)))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(webAssets.StyleCSS)))
 
 	http.HandleFunc("/get-thumb/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
-		thumb := NewResize(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
+		thumb := CreateAndSaveThumbnail(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
 		w.Header().Set("Content-Type", "image/jpeg")
 		w.Write(thumb)
 	})
 
 	http.HandleFunc("/get-file/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
-		thumb := NewResize(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
+		thumb := CreateAndSaveThumbnail(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
 		imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
 		io.WriteString(w, fmt.Sprintf("<img class='img-fluid' id='img-display' src='data:image/jpeg;base64,%s'/>", imgBase64Str))
 	})
@@ -75,7 +75,7 @@ func StartWebServer(conf *config.Config) {
 			go func() {
 				defer wg.Done()
 				imgPath := filepath.Join(conf.Camera.OutputDir, snap.FolderName, snap.FileName)
-				thumb := NewResize(imgPath)
+				thumb := CreateAndSaveThumbnail(imgPath)
 				imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
 				mu.Lock()
 				allThumbs = append(allThumbs, Hi{
@@ -129,7 +129,7 @@ func StartWebServer(conf *config.Config) {
 			go func() {
 				defer wg.Done()
 				imgPath := filepath.Join(conf.Camera.OutputDir, snap.FolderName, snap.FileName)
-				thumb := NewResize(imgPath)
+				thumb := CreateAndSaveThumbnail(imgPath)
 				imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
 				mu.Lock()
 				allThumbs = append(allThumbs, Hi{
@@ -158,6 +158,7 @@ func StartWebServer(conf *config.Config) {
 			"AllThumbs":    allThumbs,
 			"HasTimelapse": hasTimelapseVideo,
 			"FolderName":   tl[0].FolderName,
+			"LiveFeedURL": conf.Camera.LiveFeedURL,
 		}
 
 		template := template.Must(template.ParseFS(Templates, "templates/layout.html", "templates/folders.html", "templates/snaps.html"))

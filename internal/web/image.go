@@ -12,7 +12,7 @@ import (
 	"regexp"
 )
 
-func NewResize(imgPath string) []byte {
+func CreateAndSaveThumbnail(imgPath string) []byte {
 	m1 := regexp.MustCompile(`snap([0-9]+.jpg)`)
 	thumbPath := m1.ReplaceAllString(imgPath, "thumb${1}")
 	thumb, err := os.Open(thumbPath)

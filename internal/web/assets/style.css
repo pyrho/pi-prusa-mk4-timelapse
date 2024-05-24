@@ -4,6 +4,14 @@
     overflow:scroll;
     -webkit-overflow-scrolling: touch;
 }
+
+:root {
+  --main-bg-color: #EEEEEE;
+  --c1: #64CCC5;
+  --c2: #176B87;
+  --c3: #053B50;
+}
+
 body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -11,7 +19,7 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #f0f0f0;
+    background-color: var(--main-bg-color);
 }
 
 video {
@@ -61,4 +69,15 @@ video {
 
 .htmx-request.loaded-content {
     display: none;
+}
+
+h1, h2, h3 {
+    color: var(--c2);
+}
+.list-group-item.active {
+    background-color: var(--c3);
+    border-color: var(--c3);
+}
+.list-group {
+    --bs-list-group-action-hover-bg: var(--c1);
 }

@@ -14,6 +14,7 @@ type Printer struct {
 type Camera struct {
 	CameraSerialNumber string
 	OutputDir          string
+    LiveFeedURL       string
 }
 
 type FFMPEG struct {

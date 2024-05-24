@@ -15,11 +15,19 @@
   </head>
   <body class="p-5">
     <div class="container">
+      {{ if .LiveFeedURL }}
       <div class="row p-5">
-          <h1>Timelapse Folders</h1>
-        <div class="col-4">
-          {{ template "folders" . }}
+        <div class="col">
+          <img
+            class="img-fluid object-fit-cover border rounded"
+            src="{{ .LiveFeedURL }}"
+          />
         </div>
+      </div>
+      {{ end }}
+      <div class="row p-5">
+        <h1>Timelapse Folders</h1>
+        <div class="col-4">{{ template "folders" . }}</div>
       </div>
 
       <div class="row p-5">
@@ -27,7 +35,7 @@
         <div class="d-flex justify-content-center">
           <span class="loader spinner-border" role="status"></span>
         </div>
-        <div class="loaded-content" id="current_tl">
+        <div class="col loaded-content" id="current_tl">
           {{ template "snaps" . }}
         </div>
       </div>
