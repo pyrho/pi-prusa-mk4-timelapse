@@ -1,8 +1,11 @@
 {{ define "snaps" }}
+
 {{ if .HasTimelapse }}
+        <div class="m-5 d-flex justify-content-center">
 <video controls style="width: 500px">
   <source src="/serve/{{.FolderName}}/output.mp4" type="video/mp4" />
 </video>
+        </div>
 {{ else }}
 <span> No timelapse video yet. </snap>
 {{ end }}

@@ -1,12 +1,33 @@
 {{ define "folders" }}
 <div class="list-group">
-  {{ range .Timelapses }}
+  {{ range $i, $a := .Timelapses }}
   <button
     type="button"
-    value="abc"
-    hx-get="/clicked/{{.FolderName}}"
+    hx-get="/clicked/{{$a.FolderName}}"
+    hx-on:htmx-after-on-load="let currentTab = document.querySelector('[aria-current=true]');
+                               currentTab.setAttribute('aria-current', 'false')
+                               currentTab.classList.remove('active')
+                               let newTab = event.target
+                               newTab.setAttribute('aria-current', 'true')
+                               newTab.classList.add('active')"
+    hx-indicator=".loader,#current_tl"
     hx-target="#current_tl"
+    {{
+    if
+    eq
+    $i
+    0
+    }}
+    class="list-group-item list-group-item-action active"
+    aria-current="true"
+    {{
+    else
+    }}
     class="list-group-item list-group-item-action"
+    aria-current="false"
+    {{
+    end
+    }}
   >
     {{ .FolderName }}
   </button>

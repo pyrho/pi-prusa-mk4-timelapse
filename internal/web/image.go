@@ -2,7 +2,7 @@ package web
 
 import (
 	"bytes"
-	"fmt"
+	// "fmt"
 	"github.com/daddye/vips"
 	"image"
 	"image/jpeg"
@@ -36,7 +36,7 @@ func NewResize(imgPath string) []byte {
 	inBuf, _ := io.ReadAll(f)
 	buf, err := vips.Resize(inBuf, options)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		// fmt.Fprintln(os.Stderr, err)
 		return []byte{}
 	}
 
