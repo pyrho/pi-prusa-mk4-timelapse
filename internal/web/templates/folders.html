@@ -1,4 +1,4 @@
-{{ define "folders" }}
+{{ define "folders" }} {{ if .Timelapses }}
 <div class="list-group">
   {{ range $i, $a := .Timelapses }}
   <button
@@ -33,4 +33,6 @@
   </button>
   {{ end }}
 </div>
-{{ end }}
+{{ else }}
+<span> No timelapses created yet</span>
+{{ end }} {{ end }}

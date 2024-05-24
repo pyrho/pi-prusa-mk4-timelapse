@@ -1,13 +1,12 @@
 package web
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"html/template"
-	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"sync"
 
@@ -18,151 +17,93 @@ import (
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
-type TimelapseSnap struct {
-	FileName string
-	FilePath string
-}
-type Timelapse struct {
-	FolderName string
-	FolderPath string
-	Snaps      []TimelapseSnap
-}
-type Timelapses []Timelapse
+func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
+	mu := sync.Mutex{}
+	var allThumbs []Hi
+	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
+	var wg sync.WaitGroup
+	for ix, snap := range snaps {
+		wg.Add(1)
+		go func(sn SnapInfo, index int) {
+			defer wg.Done()
+			imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
+			thumbPath := CreateAndSaveThumbnail(imgPath)
+			thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
+			if err != nil {
+				log.Println(err)
+				thumbRelativePath = ""
+			}
+			mu.Lock()
+			allThumbs = append(allThumbs, Hi{
+				ThumbnailPath: thumbRelativePath,
+				ix:            index,
+				ImgPath:       sn.FolderName + "/" + sn.FileName,
+			})
+			mu.Unlock()
+		}(snap, ix)
 
-type TLInfo struct {
-	FolderName string
-	FolderPath string
-}
-type Hi struct {
-	B64     string
-	ix      int
-	ImgPath string
-}
+	}
+	wg.Wait()
+	slices.SortFunc(allThumbs, func(a, b Hi) int {
+		return a.ix - b.ix
+	})
+	return allThumbs
 
-type TmplData struct {
-	FolderName       string
-	Timelapses       []TLInfo
-	CurrentTimelapse []SnapInfo
-	AllThumbs        []Hi
 }
 
 func StartWebServer(conf *config.Config) {
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		// http.ServeFile(w, r, "relative/path/to/favicon.ico")
-		http.ServeFileFS(w, r, assets.FavIcon, "favicon.ico")
-
+		http.ServeFileFS(w, r, assets.All, "favicon.ico")
 	})
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(assets.All)))
+
 	http.Handle("/serve/", http.StripPrefix("/serve/", http.FileServer(http.Dir(conf.Camera.OutputDir))))
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(assets.StyleCSS)))
-
-	http.HandleFunc("/get-thumb/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
-		thumb := CreateAndSaveThumbnail(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
-		w.Header().Set("Content-Type", "image/jpeg")
-		w.Write(thumb)
-	})
-
-	http.HandleFunc("/get-file/{folderName}/{fileName}", func(w http.ResponseWriter, r *http.Request) {
-		thumb := CreateAndSaveThumbnail(filepath.Join(conf.Camera.OutputDir, r.PathValue("folderName"), r.PathValue("fileName")))
-		imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
-		io.WriteString(w, fmt.Sprintf("<img class='img-fluid' id='img-display' src='data:image/jpeg;base64,%s'/>", imgBase64Str))
-	})
 
 	http.HandleFunc("/clicked/{folderName}", func(w http.ResponseWriter, r *http.Request) {
 		folderName := r.PathValue("folderName")
-		// {{{
-
-		mu := sync.Mutex{}
-		var allThumbs []Hi
-		snaps := getSnapsForTimelapse(conf.Camera.OutputDir, folderName)
-		var wg sync.WaitGroup
-		for ix, snap := range snaps {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				imgPath := filepath.Join(conf.Camera.OutputDir, snap.FolderName, snap.FileName)
-				thumb := CreateAndSaveThumbnail(imgPath)
-				imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
-				mu.Lock()
-				allThumbs = append(allThumbs, Hi{
-					B64:     imgBase64Str,
-					ix:      ix,
-					ImgPath: snap.FolderName + "/" + snap.FileName,
-				})
-				mu.Unlock()
-			}()
-
-		}
-		wg.Wait()
-		slices.SortFunc(allThumbs, func(a, b Hi) int {
-			return a.ix - b.ix
-		})
-		///}}}
 		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, folderName)
 		hasTimelapseVideo := true
 		if _, err := os.Stat(timelapseVideoPath); errors.Is(err, os.ErrNotExist) {
-			// path/to/whatever does not exist
 			hasTimelapseVideo = false
 		}
 		template := template.Must(template.ParseFS(Templates, "templates/snaps.html"))
-		template.ExecuteTemplate(w, "snaps", map[string]interface{}{
-			"AllThumbs":    allThumbs,
+		if err := template.ExecuteTemplate(w, "snaps", map[string]interface{}{
+			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir),
 			"FolderName":   folderName,
 			"HasTimelapse": hasTimelapseVideo,
-		})
+		}); err != nil {
+			log.Fatalf("Cannot execute template snaps, %s\n", err)
+		}
 	})
 
 	http.HandleFunc("/modal/{folder}/{file}", func(w http.ResponseWriter, r *http.Request) {
 		template := template.Must(template.ParseFS(Templates, "templates/modal.html"))
-		template.ExecuteTemplate(w, "modal", map[string]interface{}{
+		if err := template.ExecuteTemplate(w, "modal", map[string]interface{}{
 			"ImgPath": r.PathValue("folder") + "/" + r.PathValue("file"),
-		})
+		}); err != nil {
+			log.Fatalf("Cannot execute template snaps, %s\n", err)
+		}
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-		tl := getTimelapseFolders3(conf.Camera.OutputDir)
-		// si := getSnapsForTimelapse(conf.Camera.OutputDir, tl[0].FolderName)
-
-		// {{{
-
-		mu := sync.Mutex{}
+		timelapseFolders := getTimelapseFolders(conf.Camera.OutputDir)
+		var firstTimelapseFolderName string
 		var allThumbs []Hi
-		snaps := getSnapsForTimelapse(conf.Camera.OutputDir, tl[0].FolderName)
-		var wg sync.WaitGroup
-		for ix, snap := range snaps {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				imgPath := filepath.Join(conf.Camera.OutputDir, snap.FolderName, snap.FileName)
-				thumb := CreateAndSaveThumbnail(imgPath)
-				imgBase64Str := base64.StdEncoding.EncodeToString(thumb)
-				mu.Lock()
-				allThumbs = append(allThumbs, Hi{
-					B64:     imgBase64Str,
-					ix:      ix,
-					ImgPath: snap.FolderName + "/" + snap.FileName,
-				})
-				mu.Unlock()
-			}()
-
+		if len(timelapseFolders) > 0 {
+			firstTimelapseFolderName = timelapseFolders[0].FolderName
+			allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir)
 		}
-		wg.Wait()
-		slices.SortFunc(allThumbs, func(a, b Hi) int {
-			return a.ix - b.ix
-		})
-		///}}}
-		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, tl[0].FolderName)
+		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, firstTimelapseFolderName)
 		hasTimelapseVideo := true
 		if _, err := os.Stat(timelapseVideoPath); errors.Is(err, os.ErrNotExist) {
-			// path/to/whatever does not exist
 			hasTimelapseVideo = false
 		}
 		templateData := map[string]interface{}{
-			"Timelapses": tl,
-			// "CurrentTimelapse": si,
+			"Timelapses":   timelapseFolders,
 			"AllThumbs":    allThumbs,
 			"HasTimelapse": hasTimelapseVideo,
-			"FolderName":   tl[0].FolderName,
+			"FolderName":   firstTimelapseFolderName,
 			"LiveFeedURL":  conf.Camera.LiveFeedURL,
 		}
 
@@ -174,4 +115,41 @@ func StartWebServer(conf *config.Config) {
 	log.Println("HTTP server running")
 	log.Fatal(http.ListenAndServe(":3025", nil))
 
+}
+
+func getSnapsForTimelapseFolder(outputDir string, folderName string) []SnapInfo {
+	validSnap := regexp.MustCompile(`^snap[0-9]+.jpg$`)
+	var tl []SnapInfo
+	files, err := os.ReadDir(filepath.Join(outputDir, folderName))
+	if err != nil {
+		log.Fatalf("1: Cannot read output dir: %s", err)
+	}
+	for _, file := range files {
+		if !file.IsDir() && validSnap.MatchString(file.Name()) {
+			tl = append(tl, SnapInfo{
+				FilePath:   filepath.Join(outputDir, file.Name()),
+				FolderName: folderName,
+				FileName:   file.Name(),
+			})
+		}
+	}
+	return tl
+}
+func getTimelapseFolders(outputDir string) []TLInfo {
+	validDir := regexp.MustCompile(`^[0-9-]+$`)
+	var tl []TLInfo
+	// var tl2 map[string][]string
+	files, err := os.ReadDir(outputDir)
+	if err != nil {
+		log.Fatalf("2: Cannot read output dir: %s", err)
+	}
+	for _, file := range files {
+		if file.IsDir() && validDir.MatchString(file.Name()) {
+			tl = append(tl, TLInfo{
+				FolderPath: filepath.Join(outputDir, file.Name()),
+				FolderName: file.Name(),
+			})
+		}
+	}
+	return tl
 }

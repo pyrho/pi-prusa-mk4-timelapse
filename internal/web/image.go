@@ -2,25 +2,25 @@ package web
 
 import (
 	"bytes"
+	"errors"
+	"io/fs"
+
 	// "fmt"
-	"github.com/daddye/vips"
 	"image"
 	"image/jpeg"
 	"io"
 	"log"
 	"os"
 	"regexp"
+
+	"github.com/daddye/vips"
 )
 
-func CreateAndSaveThumbnail(imgPath string) []byte {
+func CreateAndSaveThumbnail(imgPath string) string {
 	m1 := regexp.MustCompile(`snap([0-9]+.jpg)`)
 	thumbPath := m1.ReplaceAllString(imgPath, "thumb${1}")
-	thumb, err := os.Open(thumbPath)
-	if err == nil {
-		img, _, err := image.Decode(thumb)
-		if err == nil {
-			return imgToBytes(img)
-		}
+	if _, err := os.Stat(thumbPath); !errors.Is(err, fs.ErrNotExist) {
+		return thumbPath
 	}
 
 	options := vips.Options{
@@ -37,7 +37,7 @@ func CreateAndSaveThumbnail(imgPath string) []byte {
 	buf, err := vips.Resize(inBuf, options)
 	if err != nil {
 		// fmt.Fprintln(os.Stderr, err)
-		return []byte{}
+		return ""
 	}
 
 	//optional written to file
@@ -45,7 +45,7 @@ func CreateAndSaveThumbnail(imgPath string) []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return buf
+	return thumbPath
 }
 
 func imgToBytes(img image.Image) []byte {

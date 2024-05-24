@@ -5,11 +5,17 @@
     -webkit-overflow-scrolling: touch;
 }
 
+/* :root { */
+/*   --main-bg-color: #EEEEEE; */
+/*   --c1: #64CCC5; */
+/*   --c2: #176B87; */
+/*   --c3: #053B50; */
+/* } */
 :root {
-  --main-bg-color: #EEEEEE;
-  --c1: #64CCC5;
-  --c2: #176B87;
-  --c3: #053B50;
+  --c1: #F7EFE5;
+  --c2: #7743DB;
+  --c3: #C3ACD0;
+  --main-bg-color: #FFFBF5;
 }
 
 body {
@@ -80,4 +86,13 @@ h1, h2, h3 {
 }
 .list-group {
     --bs-list-group-action-hover-bg: var(--c1);
+}
+
+.img-thumbnail {
+    border-color: var(--c3);
+    background-color: var(--c3);
+}
+
+.border {
+    border-color: var(--c3);
 }

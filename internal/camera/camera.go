@@ -24,6 +24,10 @@ type CameraWrapperInterface interface {
 }
 
 func MakeCameraWrapper(baseOutputDir string) CameraWrapper {
+	if err := utils.CreateDirectoryIfNotExists(baseOutputDir); err != nil {
+		log.Fatal("Output directory does not exists, and we cannot create it:", baseOutputDir)
+	}
+
 	return CameraWrapper{baseOutputDir: baseOutputDir}
 }
 
@@ -51,8 +55,12 @@ func (c *CameraWrapper) Start() {
 
 func (c *CameraWrapper) Stop() {
 	if c.instance != nil {
-		c.instance.Exit()
-		c.instance.Free()
+		if err := c.instance.Exit(); err != nil {
+			log.Println("Cannot exit camera instance")
+		}
+		if err := c.instance.Free(); err != nil {
+			log.Println("Cannot free camera instance")
+		}
 		c.instance = nil
 		log.Println("Stopped cameraWrapper")
 	} else {
