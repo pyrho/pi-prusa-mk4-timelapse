@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/pyrho/timelapse-serial/internal/camera"
 	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/interrupt_trap"
@@ -24,13 +25,18 @@ func main() {
 		log.Println("Not monitoring camera plug events")
 	}
 
-	interrupttrap.TrapInterrupt(func() { c.Stop() })
+	vips.Startup(nil)
+	vips.LoggingSettings(nil, vips.LogLevelCritical)
+	interrupttrap.TrapInterrupt(func() {
+		c.Stop()
+		vips.Shutdown()
+	})
 
 	onSerialMessageHandler := serial.CreateSerialMessageHandler(&c, &config.FFMPEG)
 	// This needs to be last
 	go serial.StartSerialLoop(&config, onSerialMessageHandler)
 
-    go web.StartWebServer(&config)
+	go web.StartWebServer(&config)
 
 	log.Println("Running...")
 

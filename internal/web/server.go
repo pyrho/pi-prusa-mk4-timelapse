@@ -52,6 +52,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string) []Hi {
 }
 
 func StartWebServer(conf *config.Config) {
+
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, assets.All, "favicon.ico")
 	})

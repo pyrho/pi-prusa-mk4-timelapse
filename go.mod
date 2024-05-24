@@ -4,7 +4,8 @@ go 1.22.0
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/daddye/vips v0.0.0-20170307215529-87cfaf94f7a1
+	github.com/davidbyttow/govips v0.0.0-20201026223743-b1b72c7305d9
+	github.com/davidbyttow/govips/v2 v2.14.0
 	github.com/jonmol/gphoto2 v1.0.1
 	github.com/rubiojr/go-usbmon v0.0.0-20240513072523-d5cbf336b315
 	go.bug.st/serial v1.6.2
@@ -15,5 +16,7 @@ require (
 	github.com/jkeiser/iter v0.0.0-20200628201005-c8aa0ae784d1 // indirect
 	github.com/jochenvg/go-udev v0.0.0-20171110120927-d6b62d56d37b // indirect
 	golang.org/x/image v0.16.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 )

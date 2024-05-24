@@ -1,19 +1,14 @@
 package web
 
 import (
-	"bytes"
 	"errors"
 	"io/fs"
 
-	// "fmt"
-	"image"
-	"image/jpeg"
-	"io"
 	"log"
 	"os"
 	"regexp"
 
-	"github.com/daddye/vips"
+	"github.com/davidbyttow/govips/v2/vips"
 )
 
 func CreateAndSaveThumbnail(imgPath string) string {
@@ -23,41 +18,19 @@ func CreateAndSaveThumbnail(imgPath string) string {
 		return thumbPath
 	}
 
-	options := vips.Options{
-		Width:        195,
-		Height:       130,
-		Crop:         false,
-		Extend:       vips.EXTEND_WHITE,
-		Interpolator: vips.BILINEAR,
-		Gravity:      vips.CENTRE,
-		Quality:      80,
-	}
-	f, _ := os.Open(imgPath)
-	inBuf, _ := io.ReadAll(f)
-	buf, err := vips.Resize(inBuf, options)
+	image, err := vips.NewImageFromFile(imgPath)
 	if err != nil {
-		// fmt.Fprintln(os.Stderr, err)
-		return ""
+		panic(err)
 	}
-
-	//optional written to file
+	if err := image.Thumbnail(195, 130, vips.InterestingCentre); err != nil {
+		panic(err)
+	}
+	buf, _, err := image.ExportJpeg(&vips.JpegExportParams{
+		Quality: 90,
+	})
 	err = os.WriteFile(thumbPath, buf, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return thumbPath
-}
-
-func imgToBytes(img image.Image) []byte {
-	var opt jpeg.Options
-	opt.Quality = 80
-
-	buff := bytes.NewBuffer(nil)
-	err := jpeg.Encode(buff, img, &opt)
-	if err != nil {
-		log.Println(err)
-		return []byte{}
-	}
-
-	return buff.Bytes()
 }
