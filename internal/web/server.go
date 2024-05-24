@@ -33,6 +33,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 			case <-ctx.Done():
 				fmt.Println("Goroutine closed by context cancel status")
 				t.Done(nil)
+                return
 			default:
 				log.Println("Creating thumbnail...")
 				imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
