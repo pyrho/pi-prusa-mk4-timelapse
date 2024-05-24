@@ -14,21 +14,21 @@ import (
 	"log"
 	"net/http"
 
-    "github.com/nozzle/throttler"
+	"github.com/nozzle/throttler"
 	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
 func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int) []Hi {
-    log.Println("Creating all thumbnails.")
+	log.Println("Creating all thumbnails")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
 	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
-    t := throttler.New(maxRoutines, len(snaps))
+	t := throttler.New(maxRoutines, len(snaps))
 	// var wg sync.WaitGroup
 	for ix, snap := range snaps {
 		go func(sn SnapInfo, index int) {
-            log.Println("Creating thumbnail...")
+			log.Println("Creating thumbnail...")
 			imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
 			thumbPath := CreateAndSaveThumbnail(imgPath)
 			thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
@@ -36,7 +36,6 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 				log.Println(err)
 				thumbRelativePath = ""
 			}
-			t.Done(err)
 			mu.Lock()
 			allThumbs = append(allThumbs, Hi{
 				ThumbnailPath: thumbRelativePath,
@@ -44,13 +43,15 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 				ImgPath:       sn.FolderName + "/" + sn.FileName,
 			})
 			mu.Unlock()
+			t.Done(err)
 		}(snap, ix)
 
-        errorCount := t.Throttle()
-        if errorCount > 0 {
-            log.Println("image/resize: errorCount > 0")
-        }
+		errorCount := t.Throttle()
+		if errorCount > 0 {
+			log.Println("image/resize: errorCount > 0")
+		}
 	}
+	log.Println("All thumbnails created")
 	// wg.Wait()
 	slices.SortFunc(allThumbs, func(a, b Hi) int {
 		return b.ix - a.ix
@@ -164,20 +165,20 @@ func getTimelapseFolders(outputDir string) []TLInfo {
 
 		if bTime.Before(aTime) {
 			return -1
-		} else if bTime.After(aTime){
+		} else if bTime.After(aTime) {
 			return 1
 		} else {
-            return 0
-        }
+			return 0
+		}
 	})
 	return tl
 }
 
 func folderNameToTime(folderName string) (time.Time, error) {
-    layout := "2006-01-02-15-04-05"
+	layout := "2006-01-02-15-04-05"
 	date, err := time.Parse(layout, folderName)
 	if err != nil {
-        log.Println(err)
+		log.Println(err)
 		return time.Now(), err
 	} else {
 		return date, nil
