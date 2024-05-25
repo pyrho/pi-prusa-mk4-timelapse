@@ -76,7 +76,11 @@ func CreateAndSaveThumbnail(imgPath string, ctx context.Context) string {
 		log.Println("Cannot Open image from file", imgPath)
 		return ""
 	}
-	defer image.Close()
+	defer func() {
+		if image != nil {
+			image.Close()
+		}
+	}()
 
 	if err := resize(image, ctx); err != nil {
 		log.Println("Cannot resize image", err)
