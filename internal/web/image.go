@@ -41,7 +41,7 @@ func resize(image *vips.ImageRef, ctx context.Context) error {
 		log.Println("Goroutine closed by context cancel status")
 		return nil
 	default:
-		if err := image.Resize(0.06, vips.KernelLanczos3); err != nil {
+		if err := image.Resize(0.06, vips.KernelNearest); err != nil {
 			return err
 		}
 		return nil
