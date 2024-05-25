@@ -1,9 +1,11 @@
 # TODO
 
 ## Timelapsin'
-- [ ] Web server to show status and access to timelapses
-    - use htmx and go's net/http package
 - [ ] Use fluent FFMPEG instead of a system call
+- [ ] Figure out thumbnail creation OOM kill
+- [ ] Paginate folder list section
+- [x] Web server to show status and access to timelapses
+    - use htmx and go's net/http package
 - [x] Spool up camera
 - [x] Retry when the printer disconnects
 - [x] Listen when the camera connects (to reconnect to it midway)
