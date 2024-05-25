@@ -61,7 +61,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 			default:
 				log.Printf("Creating thumbnail [%d/%d]...", index, nbSnaps)
 				imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
-				thumbPath := CreateAndSaveThumbnail(imgPath)
+				thumbPath := CreateAndSaveThumbnail(imgPath, ctx)
 				thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
 				if err != nil {
 					log.Println(err)
