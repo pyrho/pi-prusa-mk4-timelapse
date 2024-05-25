@@ -1,0 +1,11 @@
+[Unit]
+Description=Timelapse Serial app
+
+[Service]
+ExecStart=/usr/local/bin/timelapse-serial --configPath /usr/local/etc/timelapse-serial.toml
+Restart=always
+RestartSec=10
+User=pi
+
+[Install]
+WantedBy=multi-user.target
