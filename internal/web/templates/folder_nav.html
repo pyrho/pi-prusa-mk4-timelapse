@@ -1,0 +1,37 @@
+{{ define "folder_nav" }}
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    {{ range $i, $a := .Pages }}
+    <li class="page-item">
+      <a
+        hx-get="/get-folder-page/{{ $i }}"
+        hx-target="#folders"
+        hx-on:htmx-after-on-load="let currentTab = document.querySelector('[aria-current=page]');
+                               currentTab.setAttribute('aria-current', 'notpage')
+                               currentTab.classList.remove('active')
+                               let newTab = event.target
+                               newTab.setAttribute('aria-current', 'page')
+                               newTab.classList.add('active')"
+        {{
+        if
+        eq
+        $i
+        0
+        }}
+        aria-current="page"
+        class="page-link active"
+        {{
+        else
+        }}
+        class="page-link"
+        {{
+        end
+        }}
+        href="#"
+        >{{ $i }}</a
+      >
+    </li>
+    {{end}}
+  </ul>
+</nav>
+{{end}}

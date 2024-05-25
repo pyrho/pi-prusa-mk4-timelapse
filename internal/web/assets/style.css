@@ -87,6 +87,9 @@ h1, h2, h3 {
 .list-group {
     --bs-list-group-action-hover-bg: var(--c1);
 }
+.list-group-item {
+        color: var(--c2);
+    }
 
 .img-thumbnail {
     border-color: var(--c3);
@@ -95,4 +98,22 @@ h1, h2, h3 {
 
 .border {
     border-color: var(--c3);
+}
+
+.active.page-link {
+    background-color: var(--c3);
+    border-color: var(--c3);
+}
+
+.page-link {
+    color: var(--c2);
+}
+
+.page-link:hover {
+background-color: var(--c1);
+color: var(--c2);
+}
+.list-group-item-action:hover {
+
+color: var(--c2);
 }

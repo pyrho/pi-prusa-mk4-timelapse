@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 
@@ -19,6 +20,26 @@ import (
 	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
+
+const FOLDERS_PER_PAGE = 5
+
+func getTimelapseFolderSubSlice(allFolders []TLInfo, n int) []TLInfo {
+	// 0 => 0..4
+	// 1 => 5..9
+	// 2 => 10..14
+	// n => (n*5)..(n+4)
+	var tmp []TLInfo
+	if len(allFolders) <= FOLDERS_PER_PAGE {
+		tmp = allFolders
+	} else if len(allFolders) < n*FOLDERS_PER_PAGE+FOLDERS_PER_PAGE {
+		tmp = allFolders[n*FOLDERS_PER_PAGE:]
+	} else {
+		tmp = allFolders[n*FOLDERS_PER_PAGE : (n*FOLDERS_PER_PAGE)+FOLDERS_PER_PAGE]
+	}
+
+	return tmp
+
+}
 
 func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
 	log.Println("Creating all thumbnails")
@@ -103,13 +124,25 @@ func StartWebServer(conf *config.Config) {
 		}
 	})
 
+	http.HandleFunc("/get-folder-page/{num}", func(w http.ResponseWriter, r *http.Request) {
+		folderPageNumber := r.PathValue("num")
+		n, _ := strconv.Atoi(folderPageNumber)
+		timelapseFolders := getTimelapseFolders(conf.Camera.OutputDir)
+		tmpl := template.Must(template.ParseFS(Templates, "templates/layout.html", "templates/folders.html"))
+		subSlice := getTimelapseFolderSubSlice(timelapseFolders, n)
+
+		if err := tmpl.ExecuteTemplate(w, "folders", map[string]interface{}{
+			"Timelapses": subSlice,
+		}); err != nil {
+			log.Fatalf("Cannot execute template snaps, %s\n", err)
+		}
+	})
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		timelapseFolders := getTimelapseFolders(conf.Camera.OutputDir)
 		var firstTimelapseFolderName string
-		// var allThumbs []Hi
 		if len(timelapseFolders) > 0 {
 			firstTimelapseFolderName = timelapseFolders[0].FolderName
-			// allThumbs = getSnapshotsThumbnails(firstTimelapseFolderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctrx)
 		}
 		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, firstTimelapseFolderName)
 		hasTimelapseVideo := true
@@ -117,14 +150,18 @@ func StartWebServer(conf *config.Config) {
 			hasTimelapseVideo = false
 		}
 		templateData := map[string]interface{}{
-			"Timelapses": timelapseFolders,
-			// "AllThumbs":    ,
+			"Timelapses":   getTimelapseFolderSubSlice(timelapseFolders, 0),
 			"HasTimelapse": hasTimelapseVideo,
 			"FolderName":   firstTimelapseFolderName,
 			"LiveFeedURL":  conf.Camera.LiveFeedURL,
+			"Pages":        make([]int, (len(timelapseFolders)/5)+1),
 		}
 
-		template := template.Must(template.ParseFS(Templates, "templates/layout.html", "templates/folders.html", "templates/snaps.html"))
+		template := template.Must(
+			template.ParseFS(
+				Templates,
+				"templates/layout.html", "templates/folders.html", "templates/snaps.html", "templates/folder_nav.html"),
+		)
 		if err := template.Execute(w, templateData); err != nil {
 			log.Fatal(err)
 		}

@@ -30,10 +30,17 @@
       {{ end }}
       <div class="row mt-5">
         <h1>Timelapse Folders</h1>
-        <div class="col-12 col-sm-3">{{ template "folders" . }}</div>
+          <div class="row">
+        <div id="folders" class="col-12 col-sm-3">
+          {{ template "folders" . }}
+        </div>
+          </div>
+          <div class="row">
+              {{ template "folder_nav" . }}
+          </div>
       </div>
 
-      <div class="row mt-5">
+      <div class="row mt-5 mb-5">
         <h1>Snapshots</h1>
         <div class="d-flex justify-content-center">
           <span class="loader spinner-border" role="status"></span>
