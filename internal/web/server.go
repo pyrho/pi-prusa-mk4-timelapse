@@ -41,7 +41,7 @@ func getTimelapseFolderSubSlice(allFolders []TLInfo, n int) []TLInfo {
 
 }
 
-func getSnapshotsThumbnails2(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
+func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
 	log.Println("Creating all thumbnails")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
@@ -94,54 +94,6 @@ func getSnapshotsThumbnails2(folderName string, outputDir string, maxRoutines in
 
 }
 
-func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
-	log.Println("Creating all thumbnails")
-	mu := sync.Mutex{}
-	var allThumbs []Hi
-	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
-	var wg sync.WaitGroup
-	sem := make(chan struct{}, maxRoutines)
-	nbSnaps := len(snaps)
-	for ix, snap := range snaps {
-		wg.Add(1)
-		sem <- struct{}{} // Acquire semaphore
-		go func(sn SnapInfo, index int) {
-			select {
-			case <-ctx.Done():
-				fmt.Println("Goroutine closed by context cancel status")
-				wg.Done()
-				return
-			default:
-				log.Printf("Creating thumbnail [%d/%d]...", index, nbSnaps)
-				imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
-				thumbPath := CreateAndSaveThumbnail(imgPath, ctx)
-				thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
-				if err != nil {
-					log.Println(err)
-					thumbRelativePath = ""
-				}
-				mu.Lock()
-				allThumbs = append(allThumbs, Hi{
-					ThumbnailPath: thumbRelativePath,
-					ix:            index,
-					ImgPath:       sn.FolderName + "/" + sn.FileName,
-				})
-				mu.Unlock()
-				log.Printf("Thumbnail [%d/%d] created and added to slice", index, nbSnaps)
-				<-sem
-				wg.Done()
-			}
-		}(snap, ix)
-
-	}
-	wg.Wait()
-	log.Println("All thumbnails created")
-	slices.SortFunc(allThumbs, func(a, b Hi) int {
-		return b.ix - a.ix
-	})
-	return allThumbs
-}
-
 func StartWebServer(conf *config.Config) {
 
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -162,7 +114,7 @@ func StartWebServer(conf *config.Config) {
 		defer cancel()
 		template := template.Must(template.ParseFS(Templates, "templates/snaps.html"))
 		if err := template.ExecuteTemplate(w, "snaps", map[string]interface{}{
-			"AllThumbs":    getSnapshotsThumbnails2(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctx),
+			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctx),
 			"FolderName":   folderName,
 			"HasTimelapse": hasTimelapseVideo,
 		}); err != nil {
