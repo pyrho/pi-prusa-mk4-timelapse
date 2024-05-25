@@ -111,7 +111,7 @@ func StartWebServer(conf *config.Config) {
 			"FolderName":   folderName,
 			"HasTimelapse": hasTimelapseVideo,
 		}); err != nil {
-			log.Fatalf("Cannot execute template snaps, %s\n", err)
+			log.Printf("Cannot execute template snaps, %s\n", err)
 		}
 	})
 
@@ -120,7 +120,7 @@ func StartWebServer(conf *config.Config) {
 		if err := template.ExecuteTemplate(w, "modal", map[string]interface{}{
 			"ImgPath": r.PathValue("folder") + "/" + r.PathValue("file"),
 		}); err != nil {
-			log.Fatalf("Cannot execute template snaps, %s\n", err)
+			log.Printf("Cannot execute template modal, %s\n", err)
 		}
 	})
 
@@ -134,7 +134,7 @@ func StartWebServer(conf *config.Config) {
 		if err := tmpl.ExecuteTemplate(w, "folders", map[string]interface{}{
 			"Timelapses": subSlice,
 		}); err != nil {
-			log.Fatalf("Cannot execute template snaps, %s\n", err)
+			log.Printf("Cannot execute template folders, %s\n", err)
 		}
 	})
 
@@ -163,7 +163,7 @@ func StartWebServer(conf *config.Config) {
 				"templates/layout.html", "templates/folders.html", "templates/snaps.html", "templates/folder_nav.html"),
 		)
 		if err := template.Execute(w, templateData); err != nil {
-			log.Fatal(err)
+			log.Printf("Cannot execute templates for main page, %s\n", err)
 		}
 	})
 	log.Println("HTTP server running")
