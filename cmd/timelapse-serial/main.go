@@ -27,9 +27,9 @@ func main() {
 
 	vips.Startup(&vips.Config{
 		ConcurrencyLevel: 1,
-		MaxCacheMem:      16 * 1024 * 1024,
-		MaxCacheSize:     16 * 1024 * 1024,
-		MaxCacheFiles:    128,
+		MaxCacheMem:      8 * 1024 * 1024,
+		MaxCacheSize:     8 * 1024 * 1024,
+		MaxCacheFiles:    8,
 	})
 	vips.LoggingSettings(nil, vips.LogLevelCritical)
 	interrupttrap.TrapInterrupt(func() {

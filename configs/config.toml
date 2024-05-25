@@ -19,4 +19,4 @@ FramesPerSecond = "24"
 TimeoutInMinutes = 20
 
 [Web]
-ThumbnailCreationMaxGoroutines = 30
+ThumbnailCreationMaxGoroutines = 50

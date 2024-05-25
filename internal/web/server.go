@@ -20,15 +20,14 @@ import (
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
-const MAX_CONCURRENT_VIPS_GOROUTINES = 100
-
 func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
 	log.Println("Creating all thumbnails")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
 	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, MAX_CONCURRENT_VIPS_GOROUTINES)
+	sem := make(chan struct{}, maxRoutines)
+	nbSnaps := len(snaps)
 	for ix, snap := range snaps {
 		wg.Add(1)
 		sem <- struct{}{} // Acquire semaphore
@@ -39,7 +38,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 				wg.Done()
 				return
 			default:
-				log.Println("Creating thumbnail...")
+				log.Printf("Creating thumbnail [%d/%d]...", index, nbSnaps)
 				imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
 				thumbPath := CreateAndSaveThumbnail(imgPath)
 				thumbRelativePath, err := filepath.Rel(outputDir, thumbPath)
