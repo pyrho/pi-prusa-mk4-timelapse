@@ -53,6 +53,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 					ImgPath:       sn.FolderName + "/" + sn.FileName,
 				})
 				mu.Unlock()
+				log.Printf("Thumbnail [%d/%d] created and added to slice", index, nbSnaps)
 				<-sem
 				wg.Done()
 			}
