@@ -4,6 +4,8 @@
   <button
     type="button"
     hx-get="/clicked/{{$a.FolderName}}"
+    {{/* hx-sync here will make sure we do not issue multiple of the request */}}
+    hx-sync=".list-group-item-action:replace"
     hx-on:htmx-after-on-load="let currentTab = document.querySelector('[aria-current=true]');
                                currentTab?.setAttribute('aria-current', 'false')
                                currentTab?.classList.remove('active')
