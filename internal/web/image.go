@@ -15,7 +15,7 @@ func CreateAndSaveThumbnail(imgPath string) string {
 	m1 := regexp.MustCompile(`snap([0-9]+.jpg)`)
 	thumbPath := m1.ReplaceAllString(imgPath, "thumb${1}")
 	if _, err := os.Stat(thumbPath); !errors.Is(err, fs.ErrNotExist) {
-        // Thumbnail already exists
+		// Thumbnail already exists
 		return thumbPath
 	}
 
@@ -31,7 +31,7 @@ func CreateAndSaveThumbnail(imgPath string) string {
 		return ""
 	}
 	buf, _, err := image.ExportJpeg(&vips.JpegExportParams{
-		Quality: 90,
+		Quality: 80,
 	})
 
 	if err != nil {

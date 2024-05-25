@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -15,25 +16,28 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/nozzle/throttler"
 	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
+
+const MAX_CONCURRENT_VIPS_GOROUTINES = 100
 
 func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
 	log.Println("Creating all thumbnails")
 	mu := sync.Mutex{}
 	var allThumbs []Hi
 	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
-	t := throttler.New(maxRoutines, len(snaps))
-	// var wg sync.WaitGroup
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, MAX_CONCURRENT_VIPS_GOROUTINES)
 	for ix, snap := range snaps {
+		wg.Add(1)
+		sem <- struct{}{} // Acquire semaphore
 		go func(sn SnapInfo, index int) {
 			select {
 			case <-ctx.Done():
 				fmt.Println("Goroutine closed by context cancel status")
-				t.Done(nil)
-                return
+				wg.Done()
+				return
 			default:
 				log.Println("Creating thumbnail...")
 				imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
@@ -50,17 +54,14 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 					ImgPath:       sn.FolderName + "/" + sn.FileName,
 				})
 				mu.Unlock()
-				t.Done(err)
+				<-sem
+				wg.Done()
 			}
 		}(snap, ix)
 
-		errorCount := t.Throttle()
-		if errorCount > 0 {
-			log.Println("image/resize: errorCount > 0")
-		}
 	}
+	wg.Wait()
 	log.Println("All thumbnails created")
-	// wg.Wait()
 	slices.SortFunc(allThumbs, func(a, b Hi) int {
 		return b.ix - a.ix
 	})
@@ -116,7 +117,7 @@ func StartWebServer(conf *config.Config) {
 			hasTimelapseVideo = false
 		}
 		templateData := map[string]interface{}{
-			"Timelapses":   timelapseFolders,
+			"Timelapses": timelapseFolders,
 			// "AllThumbs":    ,
 			"HasTimelapse": hasTimelapseVideo,
 			"FolderName":   firstTimelapseFolderName,
