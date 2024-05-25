@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	_ "net/http/pprof"
+	// _ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -189,6 +189,36 @@ func getSnapsForTimelapseFolder(outputDir string, folderName string) []SnapInfo 
 	}
 	return tl
 }
+
+func countFiles(dirPath string) uint {
+	fileCount := uint(0)
+
+	entries, _ := os.ReadDir(dirPath)
+
+	validSnap := regexp.MustCompile(`^snap[0-9]+.jpg$`)
+	for _, entry := range entries {
+		if !entry.IsDir() && validSnap.MatchString(entry.Name()) {
+			fileCount++
+		}
+	}
+
+	log.Println(fileCount)
+	return fileCount
+}
+
+func hasTimelapseVideo(dirPath string) bool {
+	entries, _ := os.ReadDir(dirPath)
+
+	validSnap := regexp.MustCompile(`^output.mp4$`)
+	for _, entry := range entries {
+		if !entry.IsDir() && validSnap.MatchString(entry.Name()) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func getTimelapseFolders(outputDir string) []TLInfo {
 	validDir := regexp.MustCompile(`^[0-9-]+$`)
 	var tl []TLInfo
@@ -199,8 +229,10 @@ func getTimelapseFolders(outputDir string) []TLInfo {
 	for _, file := range files {
 		if file.IsDir() && validDir.MatchString(file.Name()) {
 			tl = append(tl, TLInfo{
-				FolderPath: filepath.Join(outputDir, file.Name()),
-				FolderName: file.Name(),
+				FolderPath:        filepath.Join(outputDir, file.Name()),
+				FolderName:        file.Name(),
+				NumberOfSnaps:     countFiles(filepath.Join(outputDir, file.Name())),
+				HasTimelapseVideo: hasTimelapseVideo(filepath.Join(outputDir, file.Name())),
 			})
 		}
 	}

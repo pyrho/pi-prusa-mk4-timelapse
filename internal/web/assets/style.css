@@ -117,3 +117,12 @@ color: var(--c2);
 
 color: var(--c2);
 }
+
+.badge {
+color: var(--c2);
+background-color: var(--c3);
+}
+
+.has-vid {
+    background-color: var(--c2);
+}

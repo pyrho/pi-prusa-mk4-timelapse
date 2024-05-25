@@ -2,8 +2,9 @@
 
 ## Timelapsin'
 - [ ] Use fluent FFMPEG instead of a system call
-- [ ] Figure out thumbnail creation OOM kill
-- [ ] Paginate folder list section
+- [ ] Display number of thumbnails for folder
+- [x] Figure out thumbnail creation OOM kill
+- [x] Paginate folder list section
 - [x] Web server to show status and access to timelapses
     - use htmx and go's net/http package
 - [x] Spool up camera

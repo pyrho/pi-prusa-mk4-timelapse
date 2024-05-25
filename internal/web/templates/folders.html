@@ -1,8 +1,7 @@
 {{ define "folders" }} {{ if .Timelapses }}
-<div class="list-group mb-3" >
+<ul class="list-group mb-3" >
   {{ range $i, $a := .Timelapses }}
-  <button
-    type="button"
+  <li
     hx-get="/clicked/{{$a.FolderName}}"
     {{/* hx-sync here will make sure we do not issue multiple of the request */}}
     hx-sync=".list-group-item-action:replace"
@@ -18,9 +17,15 @@
     aria-current="false"
   >
     {{ .FolderName }}
-  </button>
+    <span class="position-relative badge rounded-pill">
+    {{ if .HasTimelapseVideo }}
+        <span class="position-absolute top-0 start-100 translate-middle p-2 border border-light rounded-circle has-vid">
+  </span>
+    {{ end }}
+        {{ .NumberOfSnaps }}</span>
+  </li>
   {{ end }}
-</div>
+</ul>
 {{ else }}
 <span> No timelapses created yet</span>
 {{ end }} {{ end }}

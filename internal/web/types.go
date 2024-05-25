@@ -18,8 +18,10 @@ type Timelapse struct {
 type Timelapses []Timelapse
 
 type TLInfo struct {
-	FolderName string
-	FolderPath string
+	FolderName        string
+	NumberOfSnaps     uint
+	HasTimelapseVideo bool
+	FolderPath        string
 }
 
 type Hi struct {
