@@ -1,11 +1,21 @@
 {{ define "folder_nav" }}
-<nav aria-label="Page navigation example">
+<nav aria-label="folder navigation">
   <ul class="pagination">
     {{ range $i, $a := .Pages }}
     <li class="page-item">
       <a
         hx-get="/get-folder-page/{{ $i }}"
         hx-target="#folders"
+
+        {{/*
+        This will make sure that when we change the folder page, any in-flight request is cancelled
+        It's necessary because hx-sync only works when we're on the same page.
+        Since when we switch page the elements are removed, hx-sync does not work to replace the in-flight
+        request.
+        */}}
+        hx-on:click="htmx.trigger('.list-group-item-action', 'htmx:abort')"
+
+        {{/* This is to set the "active" element*/}}
         hx-on:htmx-after-on-load="let currentTab = document.querySelector('[aria-current=page]');
                                currentTab.setAttribute('aria-current', 'notpage')
                                currentTab.classList.remove('active')
