@@ -202,7 +202,6 @@ func countFiles(dirPath string) uint {
 		}
 	}
 
-	log.Println(fileCount)
 	return fileCount
 }
 
