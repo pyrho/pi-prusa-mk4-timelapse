@@ -1,5 +1,5 @@
 {{ define "folders" }} {{ if .Timelapses }}
-<div class="list-group">
+<div class="list-group list-group-horizontal">
   {{ range $i, $a := .Timelapses }}
   <button
     type="button"
@@ -12,7 +12,7 @@
                                newTab.classList.add('active')"
     hx-indicator=".loader,#current_tl"
     hx-target="#current_tl"
-    class="list-group-item list-group-item-action"
+    class="flex-fill list-group-item list-group-item-action"
     aria-current="false"
   >
     {{ .FolderName }}
