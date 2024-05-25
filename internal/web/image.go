@@ -15,7 +15,7 @@ import (
 func exportAndWrite(image *vips.ImageRef, path string, ctx context.Context) error {
 	select {
 	case <-ctx.Done():
-		log.Println("Goroutine closed by context cancel status")
+		log.Println("Export cancelled")
 		return nil
 	default:
 		buf, _, err := image.ExportJpeg(&vips.JpegExportParams{
@@ -38,7 +38,7 @@ func exportAndWrite(image *vips.ImageRef, path string, ctx context.Context) erro
 func resize(image *vips.ImageRef, ctx context.Context) error {
 	select {
 	case <-ctx.Done():
-		log.Println("Goroutine closed by context cancel status")
+		log.Println("resize cancelled")
 		return nil
 	default:
 		if err := image.Resize(0.06, vips.KernelNearest); err != nil {
@@ -51,7 +51,7 @@ func resize(image *vips.ImageRef, ctx context.Context) error {
 func newImageFromFile(imgPath string, ctx context.Context) (*vips.ImageRef, error) {
 	select {
 	case <-ctx.Done():
-		log.Println("Goroutine closed by context cancel status")
+		log.Println("NewImage cancelled")
 		return nil, nil
 	default:
 		image, err := vips.NewImageFromFile(imgPath)

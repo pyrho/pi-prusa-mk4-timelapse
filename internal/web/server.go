@@ -41,6 +41,59 @@ func getTimelapseFolderSubSlice(allFolders []TLInfo, n int) []TLInfo {
 
 }
 
+func getSnapshotsThumbnails2(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
+	log.Println("Creating all thumbnails")
+	mu := sync.Mutex{}
+	var allThumbs []Hi
+	snaps := getSnapsForTimelapseFolder(outputDir, folderName)
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, maxRoutines)
+	nbSnaps := len(snaps)
+	for ix, snap := range snaps {
+		wg.Add(1)
+		sem <- struct{}{} // Acquire semaphore
+		go func(sn SnapInfo, index int) {
+			defer wg.Done()
+			imgPath := filepath.Join(outputDir, sn.FolderName, sn.FileName)
+			thumbPath := CreateAndSaveThumbnail(imgPath, ctx)
+			thumbRelativePath, _ := filepath.Rel(outputDir, thumbPath)
+
+			mu.Lock()
+			allThumbs = append(allThumbs, Hi{
+				ThumbnailPath: thumbRelativePath,
+				ix:            index,
+				ImgPath:       sn.FolderName + "/" + sn.FileName,
+			})
+			mu.Unlock()
+
+			log.Printf("Thumbnail [%d/%d] created and added to slice", index, nbSnaps)
+			<-sem
+		}(snap, ix)
+
+	}
+
+	// Wait for all goroutines to finish
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+        log.Println("Done waiting!")
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		log.Println("All thumbnails created!")
+		slices.SortFunc(allThumbs, func(a, b Hi) int {
+			return b.ix - a.ix
+		})
+		return allThumbs
+	case <-ctx.Done():
+		log.Println("Thumbnail creation aborted")
+		return []Hi{}
+	}
+
+}
+
 func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int, ctx context.Context) []Hi {
 	log.Println("Creating all thumbnails")
 	mu := sync.Mutex{}
@@ -105,9 +158,11 @@ func StartWebServer(conf *config.Config) {
 		if _, err := os.Stat(timelapseVideoPath); errors.Is(err, os.ErrNotExist) {
 			hasTimelapseVideo = false
 		}
+		ctx, cancel := context.WithCancel(r.Context())
+		defer cancel()
 		template := template.Must(template.ParseFS(Templates, "templates/snaps.html"))
 		if err := template.ExecuteTemplate(w, "snaps", map[string]interface{}{
-			"AllThumbs":    getSnapshotsThumbnails(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, r.Context()),
+			"AllThumbs":    getSnapshotsThumbnails2(folderName, conf.Camera.OutputDir, conf.Web.ThumbnailCreationMaxGoroutines, ctx),
 			"FolderName":   folderName,
 			"HasTimelapse": hasTimelapseVideo,
 		}); err != nil {
