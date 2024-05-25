@@ -5,6 +5,7 @@ go 1.22.0
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/davidbyttow/govips/v2 v2.14.0
+	github.com/h2non/bimg v1.1.9
 	github.com/jonmol/gphoto2 v1.0.1
 	github.com/rubiojr/go-usbmon v0.0.0-20240513072523-d5cbf336b315
 	go.bug.st/serial v1.6.2

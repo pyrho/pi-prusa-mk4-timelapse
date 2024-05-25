@@ -8,6 +8,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davidbyttow/govips/v2 v2.14.0 h1:il3pX0XMZ5nlwipkFJHRZ3vGzcdXWApARalJxNpRHJU=
 github.com/davidbyttow/govips/v2 v2.14.0/go.mod h1:eglyvgm65eImDiJJk4wpj9LSz4pWivPzWgDqkxWJn5k=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/h2non/bimg v1.1.9 h1:WH20Nxko9l/HFm4kZCA3Phbgu2cbHvYzxwxn9YROEGg=
+github.com/h2non/bimg v1.1.9/go.mod h1:R3+UiYwkK4rQl6KVFTOFJHitgLbZXBZNFh2cv3AEbp8=
 github.com/jkeiser/iter v0.0.0-20200628201005-c8aa0ae784d1 h1:smvLGU3obGU5kny71BtE/ibR0wIXRUiRFDmSn0Nxz1E=
 github.com/jkeiser/iter v0.0.0-20200628201005-c8aa0ae784d1/go.mod h1:fP/NdyhRVOv09PLRbVXrSqHhrfQypdZwgE2L4h2U5C8=
 github.com/jochenvg/go-udev v0.0.0-20171110120927-d6b62d56d37b h1:dgF9Rx3oPIz2d816jKSjnShkJfmtYc/N/DxGDFv2CGk=
