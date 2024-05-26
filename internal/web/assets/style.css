@@ -126,3 +126,8 @@ background-color: var(--c3);
 .has-vid {
     background-color: var(--c2);
 }
+
+.text-bg-secondary {
+    color: var(--c1);
+    background-color: var(--c2);
+}

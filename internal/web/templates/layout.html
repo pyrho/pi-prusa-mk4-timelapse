@@ -18,8 +18,9 @@
     <img src="" height="100%" />
     <div class="container">
       {{ if .LiveFeedURL }}
-      <div class="row mt-2 mt-md-5">
-        <div class="col">
+      <div class="row mt-2 mt-md-5 position-relative">
+        <h1>Feed<span class="badge rounded-pill position-absolute top-0 end-0" hx-get="/get-printer-status" hx-trigger="every 5s"></span></h1>
+        <div class="col mt-2">
           <img
             id="live-feed"
             class="img-fluid object-fit-cover border rounded"

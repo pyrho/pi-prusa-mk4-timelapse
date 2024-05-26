@@ -2,9 +2,12 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
+	"io"
+
 	// _ "net/http/pprof"
 	"os"
 	"path/filepath"
@@ -76,7 +79,7 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 	done := make(chan struct{})
 	go func() {
 		wg.Wait()
-        log.Println("Done waiting!")
+		log.Println("Done waiting!")
 		close(done)
 	}()
 
@@ -94,6 +97,30 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 
 }
 
+func getJSONData(w *http.ResponseWriter, apiKey string) {
+	// Create HTTP client
+	client := http.Client{}
+
+	req, err := http.NewRequest("GET", "http://mk4.lan/api/v1/status", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("X-Api-Key",apiKey)
+
+	// Send request and get response
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	b, _ := io.ReadAll(resp.Body)
+
+	var v map[string]map[string]string
+	_ = json.Unmarshal(b, &v)
+
+	io.WriteString(*w, fmt.Sprintf("%s", v["printer"]["state"]))
+}
+
 func StartWebServer(conf *config.Config) {
 
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +129,10 @@ func StartWebServer(conf *config.Config) {
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(assets.All)))
 
 	http.Handle("/serve/", http.StripPrefix("/serve/", http.FileServer(http.Dir(conf.Camera.OutputDir))))
+
+	http.HandleFunc("/get-printer-status", func(w http.ResponseWriter, r *http.Request) {
+		getJSONData(&w, conf.Web.PrusaLinkKey)
+	})
 
 	http.HandleFunc("/clicked/{folderName}", func(w http.ResponseWriter, r *http.Request) {
 		folderName := r.PathValue("folderName")

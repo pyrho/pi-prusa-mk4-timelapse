@@ -20,3 +20,4 @@ TimeoutInMinutes = 20
 
 [Web]
 ThumbnailCreationMaxGoroutines = 100
+PrusaLinkKey = "XXXX"

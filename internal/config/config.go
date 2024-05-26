@@ -19,6 +19,7 @@ type Camera struct {
 
 type Web struct {
 	ThumbnailCreationMaxGoroutines int
+    PrusaLinkKey string
 }
 
 type FFMPEG struct {

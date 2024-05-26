@@ -1,3 +1,7 @@
+function getPrinterStatus() {
+
+}
+
 window.addEventListener("focus", () => {
   if (document.querySelector("#live-feed")?.src == null) return;
 
