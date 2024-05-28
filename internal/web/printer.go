@@ -19,27 +19,27 @@ type jobInfo struct {
 	TimePrinting  int `json:"time_printing"`
 }
 
-type PrintInfo struct {
+type printInfo struct {
 	Job     jobInfo
 	Printer printerInfo
 }
 
-type PrintInfoCache struct {
-	info PrintInfo
+type printInfoCache struct {
+	info printInfo
 	mu   sync.RWMutex
 }
 
-func NewPrintInfoCache() *PrintInfoCache {
-	return &PrintInfoCache{}
+func newPrintInfoCache() *printInfoCache {
+	return &printInfoCache{}
 }
 
-func (pi *PrintInfoCache) Get() PrintInfo {
+func (pi *printInfoCache) get() printInfo {
 	pi.mu.RLock()
 	defer pi.mu.RUnlock()
 	return pi.info
 }
 
-func (pi *PrintInfoCache) StartLoop(printerUrl, apiKey string) {
+func (pi *printInfoCache) startLoop(printerUrl, apiKey string) {
 	ticker := time.NewTicker(10 * time.Second)
 	// We never want to stop!
 	// defer ticker.Stop()
@@ -62,30 +62,30 @@ func (pi *PrintInfoCache) StartLoop(printerUrl, apiKey string) {
 	}()
 }
 
-func getPrinterInformation(printeUrl string, apiKey string) (PrintInfo, error) {
+func getPrinterInformation(printeUrl string, apiKey string) (printInfo, error) {
 	// Create HTTP client
 	client := http.Client{}
 
 	req, err := http.NewRequest("GET", printeUrl+"/api/v1/status", nil)
 	if err != nil {
-		return PrintInfo{}, err
+		return printInfo{}, err
 	}
 	req.Header.Set("X-Api-Key", apiKey)
 
 	// Send request and get response
 	resp, err := client.Do(req)
 	if err != nil {
-		return PrintInfo{}, err
+		return printInfo{}, err
 	}
 	defer resp.Body.Close()
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return PrintInfo{}, err
+		return printInfo{}, err
 	}
 
-	var printInf PrintInfo
+	var printInf printInfo
 	if err = json.Unmarshal(b, &printInf); err != nil {
-		return PrintInfo{}, err
+		return printInfo{}, err
 	}
 	return printInf, nil
 

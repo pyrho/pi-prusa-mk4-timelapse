@@ -103,11 +103,11 @@ func StartWebServer(conf *config.Config) {
 
 	printerInfoEnabled := len(conf.Web.PrinterUrl) > 0
     log.Println(printerInfoEnabled )
-	var printerInfoCache *PrintInfoCache
+	var printerInfoCache *printInfoCache
 
 	if printerInfoEnabled {
-		printerInfoCache = NewPrintInfoCache()
-		printerInfoCache.StartLoop(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
+		printerInfoCache = newPrintInfoCache()
+		printerInfoCache.startLoop(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
 	}
 
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +123,7 @@ func StartWebServer(conf *config.Config) {
             return
         }
 
-		state := printerInfoCache.Get()
+		state := printerInfoCache.get()
 		template := template.Must(template.ParseFS(Templates, "templates/title.html"))
 
 		days, hours, minutes := utils.SecondsToHumanDuration(state.Job.TimeRemaining)
@@ -205,7 +205,7 @@ func StartWebServer(conf *config.Config) {
 		}
 
 		if printerInfoEnabled {
-			state := printerInfoCache.Get()
+			state := printerInfoCache.get()
 			days, hours, minutes := utils.SecondsToHumanDuration(state.Job.TimeRemaining)
 			templateData["PrinterInfo"] = map[string]interface{}{
 				"WithPrinterStatus": len(conf.Web.PrinterUrl) > 0,

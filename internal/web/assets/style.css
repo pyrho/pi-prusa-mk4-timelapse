@@ -132,11 +132,15 @@ h3 {
 /*     border-bottom: 20px solid var(--my-dark); */
 /*     display: inline-block; */
 /* } */
-#display-1-progress {
-    margin-top: -10px;
-}
 
 .progress {
     border-radius: unset;
     background-color: var(--my-light);
 }
+
+@media (min-width: 992px) { 
+  .progress {
+    width: 75% !important;
+  }
+}
+
