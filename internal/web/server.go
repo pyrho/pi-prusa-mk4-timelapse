@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"io"
 
+    // For debugging
 	// _ "net/http/pprof"
+
 	"os"
 	"path/filepath"
 	"regexp"
@@ -126,17 +127,6 @@ func StartWebServer(conf *config.Config) {
 		}
 	})
 
-	http.HandleFunc("/get-printer-status", func(w http.ResponseWriter, r *http.Request) {
-		state, err := getPrinterInformation(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
-		if err != nil {
-			log.Println(err)
-			state.Printer.State = "Unknown"
-		}
-		if _, err := io.WriteString(w, state.Printer.State); err != nil {
-			log.Println(err)
-		}
-	})
-
 	http.HandleFunc("/clicked/{folderName}", func(w http.ResponseWriter, r *http.Request) {
 		folderName := r.PathValue("folderName")
 		timelapseVideoPath := fmt.Sprintf("%s/%s/output.mp4", conf.Camera.OutputDir, folderName)
@@ -191,11 +181,12 @@ func StartWebServer(conf *config.Config) {
 			hasTimelapseVideo = false
 		}
 		templateData := map[string]interface{}{
-			"Timelapses":   getTimelapseFolderSubSlice(timelapseFolders, 0),
-			"HasTimelapse": hasTimelapseVideo,
-			"FolderName":   firstTimelapseFolderName,
-			"LiveFeedURL":  conf.Camera.LiveFeedURL,
-			"Pages":        make([]int, (len(timelapseFolders)/5)+1),
+			"Timelapses":        getTimelapseFolderSubSlice(timelapseFolders, 0),
+			"HasTimelapse":      hasTimelapseVideo,
+			"FolderName":        firstTimelapseFolderName,
+			"LiveFeedURL":       conf.Camera.LiveFeedURL,
+			"Pages":             make([]int, (len(timelapseFolders)/5)+1),
+			"WithPrinterStatus": len(conf.Web.PrinterUrl) > 0,
 		}
 
 		template := template.Must(

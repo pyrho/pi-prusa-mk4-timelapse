@@ -17,8 +17,9 @@
   <body class="p-2">
     <img src="" height="100%" />
     <div class="container">
-        <h1 class="display-1">Timelapse Serial</h1>
+      <h1 class="display-1">Timelapse Serial</h1>
       {{ if .LiveFeedURL }}
+
       <div class="row mt-2 mt-md-5">
         <h1>Feed</h1>
         <div class="col mt-2">
@@ -31,6 +32,8 @@
       </div>
       {{ end }}
       <!-- -->
+
+      {{ if .WithPrinterStatus }}
       <div
         class="row mt-5 mt-md-5 position-relative"
         hx-get="/get-printer-status2"
@@ -38,6 +41,7 @@
       >
         {{ template "printer_status" . }}
       </div>
+      {{ end }}
 
       <div class="row mt-5">
         <h1>Timelapse Folders</h1>
