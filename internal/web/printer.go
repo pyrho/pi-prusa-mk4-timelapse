@@ -3,7 +3,10 @@ package web
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
+	"sync"
+	"time"
 )
 
 type printerInfo struct {
@@ -12,13 +15,51 @@ type printerInfo struct {
 type jobInfo struct {
 	Id            int
 	Progress      float32
-    TimeRemaining int `json:"time_remaining"`
-    TimePrinting  int `json:"time_printing"`
+	TimeRemaining int `json:"time_remaining"`
+	TimePrinting  int `json:"time_printing"`
 }
 
 type PrintInfo struct {
 	Job     jobInfo
 	Printer printerInfo
+}
+
+type PrintInfoCache struct {
+	info PrintInfo
+	mu   sync.RWMutex
+}
+
+func NewPrintInfoCache() *PrintInfoCache {
+	return &PrintInfoCache{}
+}
+
+func (pi *PrintInfoCache) Get() PrintInfo {
+	pi.mu.RLock()
+	defer pi.mu.RUnlock()
+	return pi.info
+}
+
+func (pi *PrintInfoCache) StartLoop(printerUrl, apiKey string) {
+	ticker := time.NewTicker(10 * time.Second)
+	// We never want to stop!
+	// defer ticker.Stop()
+
+	go func() {
+		info, _ := getPrinterInformation(printerUrl, apiKey)
+		pi.mu.Lock()
+		pi.info = info
+		pi.mu.Unlock()
+
+		for range ticker.C {
+			info, err := getPrinterInformation(printerUrl, apiKey)
+			if err != nil {
+				log.Printf("Cannot get printer info: %v\n", err)
+			}
+			pi.mu.Lock()
+			pi.info = info
+			pi.mu.Unlock()
+		}
+	}()
 }
 
 func getPrinterInformation(printeUrl string, apiKey string) (PrintInfo, error) {

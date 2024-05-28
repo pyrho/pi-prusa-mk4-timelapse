@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 
-    // For debugging
+	// For debugging
 	// _ "net/http/pprof"
 
 	"os"
@@ -23,6 +23,7 @@ import (
 	"github.com/pyrho/timelapse-serial/internal/config"
 	"github.com/pyrho/timelapse-serial/internal/utils"
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
+	"github.com/pyrho/timelapse-serial/internal/web/vendor"
 )
 
 const FOLDERS_PER_PAGE = 5
@@ -100,30 +101,45 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 
 func StartWebServer(conf *config.Config) {
 
+	printerInfoEnabled := len(conf.Web.PrinterUrl) > 0
+    log.Println(printerInfoEnabled )
+	var printerInfoCache *PrintInfoCache
+
+	if printerInfoEnabled {
+		printerInfoCache = NewPrintInfoCache()
+		printerInfoCache.StartLoop(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
+	}
+
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, assets.All, "favicon.ico")
 	})
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServerFS(assets.All)))
+	http.Handle("/vendor/", http.StripPrefix("/vendor/", http.FileServerFS(vendor.All)))
 
 	http.Handle("/serve/", http.StripPrefix("/serve/", http.FileServer(http.Dir(conf.Camera.OutputDir))))
 
-	http.HandleFunc("/get-printer-status2", func(w http.ResponseWriter, r *http.Request) {
-		state, err := getPrinterInformation(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
-		days, hours, minutes := utils.SecondsToHumanDuration(state.Job.TimeRemaining)
-		if err != nil {
-			log.Println(err)
-			state.Printer.State = "Unknown"
-		}
-		template := template.Must(template.ParseFS(Templates, "templates/printer_status.html"))
+	http.HandleFunc("/get-printer-status5", func(w http.ResponseWriter, r *http.Request) {
+        if !printerInfoEnabled {
+            return
+        }
 
-		if err := template.ExecuteTemplate(w, "printer_status", map[string]interface{}{
-			"Days":     days,
-			"Hours":    hours,
-			"Minutes":  minutes,
+		state := printerInfoCache.Get()
+		template := template.Must(template.ParseFS(Templates, "templates/title.html"))
+
+		days, hours, minutes := utils.SecondsToHumanDuration(state.Job.TimeRemaining)
+
+		if err := template.ExecuteTemplate(w, "title", map[string]interface{}{
+			"State":    state.Printer.State,
 			"Progress": state.Job.Progress,
-			"Status":   state.Printer.State,
+			"Remaining": map[string]interface{}{
+				"Days":    days,
+				"Hours":   hours,
+				"Minutes": minutes,
+			},
+			"Refresh":           "every 5s",
+			"WithPrinterStatus": true,
 		}); err != nil {
-			log.Printf("Cannot execute template snaps, %s\n", err)
+			log.Printf("Cannot execute template title, %s\n", err)
 		}
 	})
 
@@ -181,18 +197,33 @@ func StartWebServer(conf *config.Config) {
 			hasTimelapseVideo = false
 		}
 		templateData := map[string]interface{}{
-			"Timelapses":        getTimelapseFolderSubSlice(timelapseFolders, 0),
-			"HasTimelapse":      hasTimelapseVideo,
-			"FolderName":        firstTimelapseFolderName,
-			"LiveFeedURL":       conf.Camera.LiveFeedURL,
-			"Pages":             make([]int, (len(timelapseFolders)/5)+1),
-			"WithPrinterStatus": len(conf.Web.PrinterUrl) > 0,
+			"Timelapses":   getTimelapseFolderSubSlice(timelapseFolders, 0),
+			"HasTimelapse": hasTimelapseVideo,
+			"FolderName":   firstTimelapseFolderName,
+			"LiveFeedURL":  conf.Camera.LiveFeedURL,
+			"Pages":        make([]int, (len(timelapseFolders)/5)+1),
+		}
+
+		if printerInfoEnabled {
+			state := printerInfoCache.Get()
+			days, hours, minutes := utils.SecondsToHumanDuration(state.Job.TimeRemaining)
+			templateData["PrinterInfo"] = map[string]interface{}{
+				"WithPrinterStatus": len(conf.Web.PrinterUrl) > 0,
+				"State":             state.Printer.State,
+				"Progress":          state.Job.Progress,
+				"Refresh":           "every 5s",
+				"Remaining": map[string]interface{}{
+					"Days":    days,
+					"Hours":   hours,
+					"Minutes": minutes,
+				},
+			}
 		}
 
 		template := template.Must(
 			template.ParseFS(
 				Templates,
-				"templates/layout.html", "templates/folders.html", "templates/snaps.html", "templates/folder_nav.html", "templates/printer_status.html"),
+				"templates/layout.html", "templates/title.html", "templates/folders.html", "templates/snaps.html", "templates/folder_nav.html"),
 		)
 		if err := template.Execute(w, templateData); err != nil {
 			log.Printf("Cannot execute templates for main page, %s\n", err)

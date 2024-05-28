@@ -1,8 +1,8 @@
 :root {
-  --c1: #f7efe5;
-  --c2: #7743db;
-  --c3: #c3acd0;
-  --main-bg-color: #fffbf5;
+  --my-dark: #7743db;
+  --my-mid: #c3acd0;
+  --my-light: #f7efe5;
+  --my-bg: #fffbf5;
 }
 
 body {
@@ -12,7 +12,7 @@ body {
   align-items: center;
   min-height: 100vh;
   margin: 0;
-  background-color: var(--main-bg-color);
+  background-color: var(--my-bg);
 }
 
 video {
@@ -67,72 +67,76 @@ video {
 h1,
 h2,
 h3 {
-  color: var(--c2);
+  color: var(--my-dark);
 }
 .list-group-item.active {
-  background-color: var(--c3);
-  border-color: var(--c3);
+  background-color: var(--my-mid);
+  border-color: var(--my-mid);
 }
 .list-group {
-  --bs-list-group-action-hover-bg: var(--c1);
+  --bs-list-group-action-hover-bg: var(--my-light);
 }
 .list-group-item {
-  color: var(--c2);
+  color: var(--my-dark);
 }
 
 .img-thumbnail {
-  border-color: var(--c3);
-  background-color: var(--c3);
+  border-color: var(--my-mid);
+  background-color: var(--my-mid);
 }
 
 .border {
-  border-color: var(--c3);
+  border-color: var(--my-mid);
 }
 
 .active.page-link {
-  background-color: var(--c3);
-  border-color: var(--c3);
+  background-color: var(--my-mid);
+  border-color: var(--my-mid);
 }
 
 .page-link {
-  color: var(--c2);
+  color: var(--my-dark);
 }
 
 .page-link:hover {
-  background-color: var(--c1);
-  color: var(--c2);
+  background-color: var(--my-light);
+  color: var(--my-dark);
 }
 .list-group-item-action:hover {
-  color: var(--c2);
+  color: var(--my-dark);
 }
 
 .badge {
-  color: var(--c2);
-  background-color: var(--c3);
+  color: var(--my-dark);
+  background-color: var(--my-mid);
 }
 
 .active > .badge {
-  background-color: var(--c1);
+  background-color: var(--my-light);
 }
 
 .has-vid {
-  background-color: var(--c2);
+  background-color: var(--my-dark);
 }
 
 .text-bg-secondary {
-  color: var(--c1);
-  background-color: var(--c2);
+  color: var(--my-light);
+  background-color: var(--my-dark);
 }
 
 .progress-bar {
-  background-color: var(--c2);
+  background-color: var(--my-dark);
 }
 
-.display-1 {
-    border-bottom: 20px solid var(--c2);
-    display: inline-block;
+/* .display-1 { */
+/*     border-bottom: 20px solid var(--my-dark); */
+/*     display: inline-block; */
+/* } */
+#display-1-progress {
+    margin-top: -10px;
 }
 
 .progress {
     border-radius: unset;
+    background-color: var(--my-light);
 }

@@ -1,0 +1,50 @@
+{{ define "title" }} 
+
+{{ if .WithPrinterStatus }}
+<div
+  class="row mt-5 mb-5"
+  hx-get="/get-printer-status5"
+  hx-trigger='{{ or .Refresh "load" }}'
+  hx-swap="outerHTML"
+>
+  <div class="col">
+    <h1 class="display-1 position-relative">Timelapse Serial</h1>
+    <div
+      id="display-1-progress"
+      class="progress"
+      role="progressbar"
+      aria-valuenow="25"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      style="height: 5px"
+    >
+      <div class="progress-bar" style="width: {{ .Progress }}%"></div>
+    </div>
+    <h6 class="badge rounded-pill text-uppercase">{{ .State }}</h6>
+    <h6 class="badge rounded-pill text-uppercase">{{ .Progress }}%</h6>
+    <h6 class="badge rounded-pill">
+      {{ .Remaining.Days }}d {{ .Remaining.Hours }}h {{ .Remaining.Minutes }}m
+    </h6>
+  </div>
+</div>
+
+{{ else }}
+
+<div class="row mt-5 mb-5" >
+  <div class="col">
+    <h1 class="display-1 position-relative">Timelapse Serial</h1>
+    <div
+      id="display-1-progress"
+      class="progress"
+      role="progressbar"
+      aria-valuenow="25"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      style="height: 5px"
+    >
+      <div class="progress-bar" style="width: 100%"></div>
+    </div>
+  </div>
+</div>
+{{ end }} 
+{{ end }}
