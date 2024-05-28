@@ -36,3 +36,12 @@ func Map[T, U any](ts []T, f func(T) U) []U {
 	}
 	return us
 }
+
+func SecondsToHumanDuration(seconds int) (int, int, int) {
+	minutes := seconds / 60
+	days := minutes / (24 * 60)
+	remainingMinutes := minutes % (24 * 60)
+	hours := remainingMinutes / 60
+	remainingMinutes = remainingMinutes % 60
+	return days, hours, remainingMinutes
+}

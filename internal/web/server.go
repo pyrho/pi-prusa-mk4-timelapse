@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -21,6 +20,7 @@ import (
 	"net/http"
 
 	"github.com/pyrho/timelapse-serial/internal/config"
+	"github.com/pyrho/timelapse-serial/internal/utils"
 	"github.com/pyrho/timelapse-serial/internal/web/assets"
 )
 
@@ -97,30 +97,6 @@ func getSnapshotsThumbnails(folderName string, outputDir string, maxRoutines int
 
 }
 
-func getJSONData(w *http.ResponseWriter, apiKey string) {
-	// Create HTTP client
-	client := http.Client{}
-
-	req, err := http.NewRequest("GET", "http://mk4.lan/api/v1/status", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("X-Api-Key",apiKey)
-
-	// Send request and get response
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	b, _ := io.ReadAll(resp.Body)
-
-	var v map[string]map[string]string
-	_ = json.Unmarshal(b, &v)
-
-	io.WriteString(*w, fmt.Sprintf("%s", v["printer"]["state"]))
-}
-
 func StartWebServer(conf *config.Config) {
 
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -130,8 +106,35 @@ func StartWebServer(conf *config.Config) {
 
 	http.Handle("/serve/", http.StripPrefix("/serve/", http.FileServer(http.Dir(conf.Camera.OutputDir))))
 
+	http.HandleFunc("/get-printer-status2", func(w http.ResponseWriter, r *http.Request) {
+		state, err := getPrinterInformation(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
+		days, hours, minutes := utils.SecondsToHumanDuration(state.Job.TimeRemaining)
+		if err != nil {
+			log.Println(err)
+			state.Printer.State = "Unknown"
+		}
+		template := template.Must(template.ParseFS(Templates, "templates/printer_status.html"))
+
+		if err := template.ExecuteTemplate(w, "printer_status", map[string]interface{}{
+			"Days":     days,
+			"Hours":    hours,
+			"Minutes":  minutes,
+			"Progress": state.Job.Progress,
+			"Status":   state.Printer.State,
+		}); err != nil {
+			log.Printf("Cannot execute template snaps, %s\n", err)
+		}
+	})
+
 	http.HandleFunc("/get-printer-status", func(w http.ResponseWriter, r *http.Request) {
-		getJSONData(&w, conf.Web.PrusaLinkKey)
+		state, err := getPrinterInformation(conf.Web.PrinterUrl, conf.Web.PrusaLinkKey)
+		if err != nil {
+			log.Println(err)
+			state.Printer.State = "Unknown"
+		}
+		if _, err := io.WriteString(w, state.Printer.State); err != nil {
+			log.Println(err)
+		}
 	})
 
 	http.HandleFunc("/clicked/{folderName}", func(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +201,7 @@ func StartWebServer(conf *config.Config) {
 		template := template.Must(
 			template.ParseFS(
 				Templates,
-				"templates/layout.html", "templates/folders.html", "templates/snaps.html", "templates/folder_nav.html"),
+				"templates/layout.html", "templates/folders.html", "templates/snaps.html", "templates/folder_nav.html", "templates/printer_status.html"),
 		)
 		if err := template.Execute(w, templateData); err != nil {
 			log.Printf("Cannot execute templates for main page, %s\n", err)

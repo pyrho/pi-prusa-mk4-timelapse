@@ -14,12 +14,13 @@
     <title>Timelapse Serial</title>
     <link rel="stylesheet" href="/assets/style.css" />
   </head>
-  <body>
+  <body class="p-2">
     <img src="" height="100%" />
     <div class="container">
+        <h1 class="display-1">Timelapse Serial</h1>
       {{ if .LiveFeedURL }}
-      <div class="row mt-2 mt-md-5 position-relative">
-        <h1>Feed<span class="badge rounded-pill position-absolute top-0 end-0" hx-get="/get-printer-status" hx-trigger="load, every 5s"></span></h1>
+      <div class="row mt-2 mt-md-5">
+        <h1>Feed</h1>
         <div class="col mt-2">
           <img
             id="live-feed"
@@ -29,16 +30,23 @@
         </div>
       </div>
       {{ end }}
+      <!-- -->
+      <div
+        class="row mt-5 mt-md-5 position-relative"
+        hx-get="/get-printer-status2"
+        hx-trigger="load, every 5s"
+      >
+        {{ template "printer_status" . }}
+      </div>
+
       <div class="row mt-5">
         <h1>Timelapse Folders</h1>
-          <div class="row">
-        <div id="folders" class="col-12 col-sm-3">
-          {{ template "folders" . }}
+        <div class="row">
+          <div id="folders" class="col-12 col-sm-3">
+            {{ template "folders" . }}
+          </div>
         </div>
-          </div>
-          <div class="row">
-              {{ template "folder_nav" . }}
-          </div>
+        <div class="row">{{ template "folder_nav" . }}</div>
       </div>
 
       <div class="row mt-5 mb-5">

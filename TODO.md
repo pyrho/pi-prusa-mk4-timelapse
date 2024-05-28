@@ -3,6 +3,7 @@
 ## Timelapsin'
 - [ ] Use fluent FFMPEG instead of a system call
 - [ ] Better logger (with log levels)
+- https://htmx.org/examples/progress-bar/
 - [x] Display number of thumbnails for folder
 - [x] Figure out thumbnail creation OOM kill
 - [x] Paginate folder list section

@@ -21,3 +21,4 @@ TimeoutInMinutes = 20
 [Web]
 ThumbnailCreationMaxGoroutines = 100
 PrusaLinkKey = "XXXX"
+PrinterUrl = "http://mk4.lan"
