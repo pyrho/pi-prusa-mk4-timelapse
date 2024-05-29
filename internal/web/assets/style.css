@@ -136,27 +136,4 @@ h3 {
 .progress {
   border-radius: unset;
   background-color: var(--my-light);
-  width: 35%;
-}
-
-@media (min-width: 576px) {
-  .progress {
-    width: 45% !important;
-  }
-}
-
-@media (min-width: 768px) {
-  .progress {
-    width: 65% !important;
-  }
-}
-
-@media (min-width: 992px) {
-  .progress {
-    width: 75% !important;
-  }
-}
-
-.translate-middle-y-60 {
-  transform: translateY(-60%) !important;
 }

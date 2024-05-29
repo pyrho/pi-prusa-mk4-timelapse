@@ -18,9 +18,9 @@
       aria-valuemax="100"
       style="height: 10px"
     >
-      <div class="progress-bar position-relative" style="width: {{ or .Progress "100" }}%"></div>
+      <div class="progress-bar" style="width: {{ or .Progress "100" }}%"></div>
     </div>
-    <div class="position-absolute end-0 translate-middle-y-60">
+    <div class="mt-2">
     <h6 class="badge rounded-pill text-uppercase">{{ or .State "Unknown" }}</h6>
     {{ if eq .State "PRINTING" }} 
     <h6 class="badge rounded-pill text-uppercase">{{ or .Progress "100" }}%</h6>
